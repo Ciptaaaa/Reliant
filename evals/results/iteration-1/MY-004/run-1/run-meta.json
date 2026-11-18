@@ -1,0 +1,18 @@
+{
+  "case_id": "MY-004",
+  "run": 1,
+  "requested_model": "bansos_codebuddy",
+  "served_model": "deepseek-v4.1-flash",
+  "base_url": "http://127.0.0.1:20128/v1",
+  "date": "2026-11-18",
+  "with_skill": true,
+  "mode": "single-turn, no tools, references preloaded",
+  "system_prompt_chars": 70141,
+  "user_prompt_chars": 4266,
+  "prompt_tokens": 1153,
+  "completion_tokens": 1246,
+  "http_status": 200,
+  "duration_s": 8.4,
+  "self_evaluated": true,
+  "independence_note": "fixtures authored by the same model family; not an independent evaluation"
+}

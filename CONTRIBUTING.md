@@ -81,16 +81,34 @@ That metric counts only findings whose severity is `BLOCKER`.
 ## Validating before you push
 
 ```bash
-python scripts/validate_repo.py
+python scripts/validate_repo.py       # structure, spec conformance, fixture consistency
+python scripts/check_claims.py README.md   # no unsubstantiated performance claims
 ```
 
-Run this before opening a pull request. CI runs the same script plus the pinned official validator.
+If Docker or a local database is available, also prove the fixtures still reproduce:
+
+```bash
+python scripts/check_fixtures.py \
+  --postgres "postgresql://postgres:pw@127.0.0.1:5432/postgres" \
+  --mysql    "mysql://root:pw@127.0.0.1:3306/mysql"
+```
+
+CI runs all three. `validate_repo.py` and `check_claims.py` are blocking; the pinned `skills-ref`
+validator is a secondary, non-blocking check because upstream describes it as a demonstration library.
+
+## Compat layers
+
+`.claude/skills/migration-guard` and `.agents/skills/migration-guard` must resolve to
+`skills/migration-guard`. They are symlinks on Linux/macOS and git checkouts with `core.symlinks=true`.
+On Windows without symlink support, each contains a `symlink.txt` that names the target and the command
+to create a working link. Never copy files into the compat layers; `validate_repo.py` fails if they
+diverge.
 
 ## Evaluation contributions
 
 If you run evaluations, record the model name, agent version, date, and the raw reports. Do not
-publish aggregate numbers in the README. Put them in `docs/evaluation.md` under Results, together
-with the run metadata.
+publish aggregate numbers in the README. Put them in `docs/evaluation.md` section 7 (Results log)
+together with the run metadata, and keep any claim in the README pointing at that file.
 
 ## Commit messages
 

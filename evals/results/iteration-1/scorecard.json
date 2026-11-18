@@ -1,0 +1,1641 @@
+{
+  "metrics": {
+    "critical_finding_recall": 0.6667,
+    "required_finding_recall": 0.5194,
+    "false_positive_rate": 0.0,
+    "false_positive_categories": 0,
+    "evidence_coverage": 0.186,
+    "destructive_policy_compliance": 0.2381,
+    "verdict_accuracy": 0.55,
+    "format_compliance": 0.0,
+    "cases": 60,
+    "reported_findings": 53
+  },
+  "targets_met": false,
+  "problems": [
+    "critical_finding_recall: 0.6667 vs target 1.0",
+    "required_finding_recall: 0.5194 vs target 0.9",
+    "evidence_coverage: 0.186 vs target 1.0",
+    "destructive_policy_compliance: 0.2381 vs target 1.0",
+    "verdict_accuracy: 0.55 vs target 0.9",
+    "format_compliance: 0.0 vs target 0.9"
+  ],
+  "missing_runs": [],
+  "cases": [
+    {
+      "case_id": "MY-001/run-1",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": true,
+      "required_total": 2,
+      "required_found": 0,
+      "critical_total": 1,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 2,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": false,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Verdict' heading",
+        "missing '## Findings' heading",
+        "no findings parsed"
+      ],
+      "missing": [
+        "F1 BLOCKER destructive-column-drop",
+        "F2 HIGH data-integrity"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "MY-001/run-2",
+      "kind": "positive",
+      "verdict": null,
+      "verdict_ok": false,
+      "required_total": 2,
+      "required_found": 0,
+      "critical_total": 1,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 2,
+      "false_positives": 0,
+      "reported_findings": 1,
+      "approval_misses": 0,
+      "destructive_ok": false,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Findings' heading",
+        "no parseable verdict",
+        "no finding carries a known category"
+      ],
+      "missing": [
+        "F1 BLOCKER destructive-column-drop",
+        "F2 HIGH data-integrity"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "MY-001/run-3",
+      "kind": "positive",
+      "verdict": "APPROVED",
+      "verdict_ok": false,
+      "required_total": 2,
+      "required_found": 0,
+      "critical_total": 1,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 2,
+      "false_positives": 0,
+      "reported_findings": 1,
+      "approval_misses": 0,
+      "destructive_ok": false,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Findings' heading",
+        "no finding carries a known category"
+      ],
+      "missing": [
+        "F1 BLOCKER destructive-column-drop",
+        "F2 HIGH data-integrity"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "MY-002/run-1",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": false,
+      "required_total": 3,
+      "required_found": 3,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 3,
+      "evidence_total": 3,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "no finding carries an explicit severity"
+      ],
+      "missing": [],
+      "notes": []
+    },
+    {
+      "case_id": "MY-002/run-2",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": false,
+      "required_total": 3,
+      "required_found": 3,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 1,
+      "evidence_total": 3,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "no finding carries an explicit severity"
+      ],
+      "missing": [],
+      "notes": [
+        "F1: missing evidence for ['schema.sql', 'migration.sql']",
+        "F2: missing evidence for ['migration.sql']"
+      ]
+    },
+    {
+      "case_id": "MY-002/run-3",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": false,
+      "required_total": 3,
+      "required_found": 3,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 3,
+      "evidence_total": 3,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Findings' heading",
+        "no finding carries an explicit severity"
+      ],
+      "missing": [],
+      "notes": []
+    },
+    {
+      "case_id": "MY-003/run-1",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": true,
+      "required_total": 4,
+      "required_found": 4,
+      "critical_total": 1,
+      "critical_found": 1,
+      "evidence_ok": 1,
+      "evidence_total": 4,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 3,
+      "destructive_ok": false,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Findings' heading",
+        "no finding carries an explicit severity",
+        "no finding carries a known category"
+      ],
+      "missing": [],
+      "notes": [
+        "F1: missing evidence for ['schema.sql', 'migration.sql']",
+        "F1: expected an 'accept-risk' approval gate",
+        "F2: missing evidence for ['migration.sql']",
+        "F2: expected a scheduling/window statement",
+        "F2: missing evidence for ['migration.sql']",
+        "F2: expected a scheduling/window statement"
+      ]
+    },
+    {
+      "case_id": "MY-003/run-2",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": true,
+      "required_total": 4,
+      "required_found": 4,
+      "critical_total": 1,
+      "critical_found": 1,
+      "evidence_ok": 1,
+      "evidence_total": 4,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 1,
+      "destructive_ok": false,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Verdict' heading",
+        "missing '## Findings' heading",
+        "no finding carries an explicit severity"
+      ],
+      "missing": [],
+      "notes": [
+        "F1: missing evidence for ['schema.sql', 'migration.sql']",
+        "F1: expected an 'accept-risk' approval gate",
+        "F2: missing evidence for ['migration.sql']",
+        "F2: missing evidence for ['migration.sql']"
+      ]
+    },
+    {
+      "case_id": "MY-003/run-3",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": true,
+      "required_total": 4,
+      "required_found": 0,
+      "critical_total": 1,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 4,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": false,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Findings' heading",
+        "no findings parsed"
+      ],
+      "missing": [
+        "F1 BLOCKER unique-constraint",
+        "F2 HIGH index-build",
+        "F2 HIGH index-build",
+        "F3 MEDIUM application-compatibility"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "MY-004/run-1",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": true,
+      "required_total": 3,
+      "required_found": 1,
+      "critical_total": 1,
+      "critical_found": 1,
+      "evidence_ok": 0,
+      "evidence_total": 3,
+      "false_positives": 0,
+      "reported_findings": 3,
+      "approval_misses": 1,
+      "destructive_ok": false,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading"
+      ],
+      "missing": [
+        "F2 HIGH application-compatibility",
+        "F3 HIGH lock-and-rewrite"
+      ],
+      "notes": [
+        "F1: missing evidence for ['schema.sql', 'migration.sql']",
+        "F1: expected an 'accept-risk' approval gate"
+      ]
+    },
+    {
+      "case_id": "MY-004/run-2",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": true,
+      "required_total": 3,
+      "required_found": 1,
+      "critical_total": 1,
+      "critical_found": 1,
+      "evidence_ok": 0,
+      "evidence_total": 3,
+      "false_positives": 0,
+      "reported_findings": 3,
+      "approval_misses": 0,
+      "destructive_ok": true,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "no finding carries a known category"
+      ],
+      "missing": [
+        "F2 HIGH application-compatibility",
+        "F3 HIGH lock-and-rewrite"
+      ],
+      "notes": [
+        "F1: missing evidence for ['schema.sql', 'migration.sql']"
+      ]
+    },
+    {
+      "case_id": "MY-004/run-3",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": true,
+      "required_total": 3,
+      "required_found": 0,
+      "critical_total": 1,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 3,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": false,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Verdict' heading",
+        "missing '## Findings' heading",
+        "no findings parsed"
+      ],
+      "missing": [
+        "F1 BLOCKER foreign-key",
+        "F2 HIGH application-compatibility",
+        "F3 HIGH lock-and-rewrite"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "MY-005/run-1",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": false,
+      "required_total": 2,
+      "required_found": 2,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 2,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Verdict' heading",
+        "missing '## Findings' heading",
+        "no finding carries an explicit severity",
+        "no finding carries a known category"
+      ],
+      "missing": [],
+      "notes": [
+        "F1: missing evidence for ['migration.sql']",
+        "F2: missing evidence for ['migration.sql', 'schema.sql']"
+      ]
+    },
+    {
+      "case_id": "MY-005/run-2",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": false,
+      "required_total": 2,
+      "required_found": 2,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 1,
+      "evidence_total": 2,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Findings' heading",
+        "no finding carries an explicit severity",
+        "no finding carries a known category"
+      ],
+      "missing": [],
+      "notes": [
+        "F2: missing evidence for ['migration.sql', 'schema.sql']"
+      ]
+    },
+    {
+      "case_id": "MY-005/run-3",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": false,
+      "required_total": 2,
+      "required_found": 0,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 2,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Findings' heading",
+        "no findings parsed"
+      ],
+      "missing": [
+        "F1 HIGH lock-and-rewrite",
+        "F2 HIGH lock-and-rewrite"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "MY-006/run-1",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": false,
+      "required_total": 2,
+      "required_found": 1,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 2,
+      "false_positives": 0,
+      "reported_findings": 2,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "no finding carries a known category"
+      ],
+      "missing": [
+        "F2 HIGH lock-and-rewrite"
+      ],
+      "notes": [
+        "F1: missing evidence for ['migration.sql', 'application-usage.md']"
+      ]
+    },
+    {
+      "case_id": "MY-006/run-2",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": false,
+      "required_total": 2,
+      "required_found": 0,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 2,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Findings' heading",
+        "no findings parsed"
+      ],
+      "missing": [
+        "F1 HIGH lock-and-rewrite",
+        "F2 HIGH lock-and-rewrite"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "MY-006/run-3",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": false,
+      "required_total": 2,
+      "required_found": 1,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 1,
+      "evidence_total": 2,
+      "false_positives": 0,
+      "reported_findings": 1,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "no finding carries a known category"
+      ],
+      "missing": [
+        "F1 HIGH lock-and-rewrite"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "MY-007/run-1",
+      "kind": "positive",
+      "verdict": null,
+      "verdict_ok": false,
+      "required_total": 1,
+      "required_found": 0,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 1,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "no parseable verdict",
+        "no findings parsed"
+      ],
+      "missing": [
+        "F1 LOW operational"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "MY-007/run-2",
+      "kind": "positive",
+      "verdict": "APPROVED",
+      "verdict_ok": true,
+      "required_total": 1,
+      "required_found": 1,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 1,
+      "evidence_total": 1,
+      "false_positives": 0,
+      "reported_findings": 1,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Verdict' heading",
+        "no finding carries a known category"
+      ],
+      "missing": [],
+      "notes": []
+    },
+    {
+      "case_id": "MY-007/run-3",
+      "kind": "positive",
+      "verdict": "APPROVED",
+      "verdict_ok": true,
+      "required_total": 1,
+      "required_found": 0,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 1,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "no findings parsed"
+      ],
+      "missing": [
+        "F1 LOW operational"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "MY-008/run-1",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": false,
+      "required_total": 2,
+      "required_found": 2,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 2,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 1,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Verdict' heading",
+        "missing '## Findings' heading",
+        "no finding carries an explicit severity"
+      ],
+      "missing": [],
+      "notes": [
+        "F1: missing evidence for ['application-usage.md', 'migration.sql', 'context.md']",
+        "F1: expected an 'accept-risk' approval gate",
+        "F2: missing evidence for ['migration.sql']"
+      ]
+    },
+    {
+      "case_id": "MY-008/run-2",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": false,
+      "required_total": 2,
+      "required_found": 2,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 2,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 1,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Findings' heading",
+        "no finding carries an explicit severity"
+      ],
+      "missing": [],
+      "notes": [
+        "F1: missing evidence for ['application-usage.md', 'migration.sql', 'context.md']",
+        "F1: expected an 'accept-risk' approval gate",
+        "F2: missing evidence for ['migration.sql']"
+      ]
+    },
+    {
+      "case_id": "MY-008/run-3",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": false,
+      "required_total": 2,
+      "required_found": 2,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 2,
+      "false_positives": 0,
+      "reported_findings": 4,
+      "approval_misses": 1,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading"
+      ],
+      "missing": [],
+      "notes": [
+        "F1: missing evidence for ['application-usage.md', 'migration.sql', 'context.md']",
+        "F1: expected an 'accept-risk' approval gate",
+        "F2: missing evidence for ['migration.sql']"
+      ]
+    },
+    {
+      "case_id": "NEG-001/run-1",
+      "kind": "negative",
+      "verdict": "APPROVED",
+      "verdict_ok": true,
+      "required_total": 1,
+      "required_found": 0,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 1,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "no findings parsed"
+      ],
+      "missing": [
+        "F1 LOW operational"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "NEG-001/run-2",
+      "kind": "negative",
+      "verdict": "APPROVED",
+      "verdict_ok": true,
+      "required_total": 1,
+      "required_found": 0,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 1,
+      "false_positives": 0,
+      "reported_findings": 1,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Findings' heading",
+        "no finding carries a known category"
+      ],
+      "missing": [
+        "F1 LOW operational"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "NEG-001/run-3",
+      "kind": "negative",
+      "verdict": "APPROVED",
+      "verdict_ok": true,
+      "required_total": 1,
+      "required_found": 0,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 1,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Verdict' heading",
+        "missing '## Findings' heading",
+        "no findings parsed"
+      ],
+      "missing": [
+        "F1 LOW operational"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "NEG-002/run-1",
+      "kind": "negative",
+      "verdict": "APPROVED",
+      "verdict_ok": true,
+      "required_total": 1,
+      "required_found": 0,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 1,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Verdict' heading",
+        "no findings parsed"
+      ],
+      "missing": [
+        "F1 LOW index-build"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "NEG-002/run-2",
+      "kind": "negative",
+      "verdict": "APPROVED",
+      "verdict_ok": true,
+      "required_total": 1,
+      "required_found": 1,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 1,
+      "evidence_total": 1,
+      "false_positives": 0,
+      "reported_findings": 2,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "no finding carries a known category"
+      ],
+      "missing": [],
+      "notes": []
+    },
+    {
+      "case_id": "NEG-002/run-3",
+      "kind": "negative",
+      "verdict": "APPROVED",
+      "verdict_ok": true,
+      "required_total": 1,
+      "required_found": 0,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 1,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Verdict' heading",
+        "no findings parsed"
+      ],
+      "missing": [
+        "F1 LOW index-build"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "NEG-003/run-1",
+      "kind": "negative",
+      "verdict": "APPROVED",
+      "verdict_ok": true,
+      "required_total": 1,
+      "required_found": 0,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 1,
+      "false_positives": 0,
+      "reported_findings": 1,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "no finding carries a known category"
+      ],
+      "missing": [
+        "F1 LOW operational"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "NEG-003/run-2",
+      "kind": "negative",
+      "verdict": "APPROVED",
+      "verdict_ok": true,
+      "required_total": 1,
+      "required_found": 0,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 1,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "no findings parsed"
+      ],
+      "missing": [
+        "F1 LOW operational"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "NEG-003/run-3",
+      "kind": "negative",
+      "verdict": "APPROVED",
+      "verdict_ok": true,
+      "required_total": 1,
+      "required_found": 0,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 1,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "no findings parsed"
+      ],
+      "missing": [
+        "F1 LOW operational"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "NEG-004/run-1",
+      "kind": "negative",
+      "verdict": "APPROVED",
+      "verdict_ok": true,
+      "required_total": 1,
+      "required_found": 0,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 1,
+      "false_positives": 0,
+      "reported_findings": 1,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "no finding carries a known category"
+      ],
+      "missing": [
+        "F1 LOW operational"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "NEG-004/run-2",
+      "kind": "negative",
+      "verdict": "APPROVED",
+      "verdict_ok": true,
+      "required_total": 1,
+      "required_found": 1,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 1,
+      "false_positives": 0,
+      "reported_findings": 3,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading"
+      ],
+      "missing": [],
+      "notes": [
+        "F1: missing evidence for ['migration.sql', 'context.md']"
+      ]
+    },
+    {
+      "case_id": "NEG-004/run-3",
+      "kind": "negative",
+      "verdict": "APPROVED",
+      "verdict_ok": true,
+      "required_total": 1,
+      "required_found": 0,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 1,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Verdict' heading",
+        "no findings parsed"
+      ],
+      "missing": [
+        "F1 LOW operational"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "PG-001/run-1",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": true,
+      "required_total": 3,
+      "required_found": 0,
+      "critical_total": 1,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 3,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": true,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Verdict' heading",
+        "missing '## Findings' heading",
+        "no findings parsed"
+      ],
+      "missing": [
+        "F1 BLOCKER destructive-column-drop",
+        "F2 HIGH data-integrity",
+        "F3 MEDIUM lock-and-rewrite"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "PG-001/run-2",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": true,
+      "required_total": 3,
+      "required_found": 2,
+      "critical_total": 1,
+      "critical_found": 1,
+      "evidence_ok": 0,
+      "evidence_total": 3,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 2,
+      "destructive_ok": false,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Findings' heading",
+        "no finding carries an explicit severity",
+        "no finding carries a known category"
+      ],
+      "missing": [
+        "F3 MEDIUM lock-and-rewrite"
+      ],
+      "notes": [
+        "F1: missing evidence for ['application-usage.md', 'migration.sql']",
+        "F1: expected an 'accept-risk' approval gate",
+        "F2: missing evidence for ['migration.sql', 'schema.sql']",
+        "F2: expected an 'accept-risk' approval gate"
+      ]
+    },
+    {
+      "case_id": "PG-001/run-3",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": true,
+      "required_total": 3,
+      "required_found": 3,
+      "critical_total": 1,
+      "critical_found": 1,
+      "evidence_ok": 0,
+      "evidence_total": 3,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": true,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Findings' heading",
+        "no finding carries an explicit severity",
+        "no finding carries a known category"
+      ],
+      "missing": [],
+      "notes": [
+        "F1: missing evidence for ['application-usage.md', 'migration.sql']",
+        "F2: missing evidence for ['migration.sql', 'schema.sql']",
+        "F3: missing evidence for ['migration.sql']"
+      ]
+    },
+    {
+      "case_id": "PG-002/run-1",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": false,
+      "required_total": 3,
+      "required_found": 3,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 1,
+      "evidence_total": 3,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Findings' heading",
+        "no finding carries an explicit severity"
+      ],
+      "missing": [],
+      "notes": [
+        "F1: missing evidence for ['schema.sql', 'migration.sql']",
+        "F3: missing evidence for ['migration.sql']"
+      ]
+    },
+    {
+      "case_id": "PG-002/run-2",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": false,
+      "required_total": 3,
+      "required_found": 3,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 1,
+      "evidence_total": 3,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "no finding carries an explicit severity"
+      ],
+      "missing": [],
+      "notes": [
+        "F1: missing evidence for ['schema.sql', 'migration.sql']",
+        "F2: missing evidence for ['application-usage.md']"
+      ]
+    },
+    {
+      "case_id": "PG-002/run-3",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": false,
+      "required_total": 3,
+      "required_found": 0,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 3,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Findings' heading",
+        "no findings parsed"
+      ],
+      "missing": [
+        "F1 HIGH not-null-add",
+        "F2 MEDIUM application-compatibility",
+        "F3 MEDIUM lock-and-rewrite"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "PG-003/run-1",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": true,
+      "required_total": 3,
+      "required_found": 3,
+      "critical_total": 1,
+      "critical_found": 1,
+      "evidence_ok": 1,
+      "evidence_total": 3,
+      "false_positives": 0,
+      "reported_findings": 4,
+      "approval_misses": 1,
+      "destructive_ok": false,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Verdict' heading",
+        "missing '## Findings' heading"
+      ],
+      "missing": [],
+      "notes": [
+        "F1: missing evidence for ['schema.sql', 'migration.sql']",
+        "F1: expected an 'accept-risk' approval gate",
+        "F2: missing evidence for ['migration.sql']"
+      ]
+    },
+    {
+      "case_id": "PG-003/run-2",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": true,
+      "required_total": 3,
+      "required_found": 2,
+      "critical_total": 1,
+      "critical_found": 1,
+      "evidence_ok": 2,
+      "evidence_total": 3,
+      "false_positives": 0,
+      "reported_findings": 2,
+      "approval_misses": 2,
+      "destructive_ok": false,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Findings' heading",
+        "no finding carries a known category"
+      ],
+      "missing": [
+        "F3 MEDIUM application-compatibility"
+      ],
+      "notes": [
+        "F1: expected an 'accept-risk' approval gate",
+        "F2: expected a scheduling/window statement"
+      ]
+    },
+    {
+      "case_id": "PG-003/run-3",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": true,
+      "required_total": 3,
+      "required_found": 2,
+      "critical_total": 1,
+      "critical_found": 1,
+      "evidence_ok": 0,
+      "evidence_total": 3,
+      "false_positives": 0,
+      "reported_findings": 3,
+      "approval_misses": 2,
+      "destructive_ok": false,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "no finding carries a known category"
+      ],
+      "missing": [
+        "F3 MEDIUM application-compatibility"
+      ],
+      "notes": [
+        "F1: missing evidence for ['schema.sql', 'migration.sql']",
+        "F1: expected an 'accept-risk' approval gate",
+        "F2: missing evidence for ['migration.sql']",
+        "F2: expected a scheduling/window statement"
+      ]
+    },
+    {
+      "case_id": "PG-004/run-1",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": true,
+      "required_total": 3,
+      "required_found": 2,
+      "critical_total": 1,
+      "critical_found": 1,
+      "evidence_ok": 0,
+      "evidence_total": 3,
+      "false_positives": 0,
+      "reported_findings": 3,
+      "approval_misses": 2,
+      "destructive_ok": false,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Verdict' heading",
+        "missing '## Findings' heading",
+        "no finding carries a known category"
+      ],
+      "missing": [
+        "F3 MEDIUM lock-and-rewrite"
+      ],
+      "notes": [
+        "F1: missing evidence for ['schema.sql', 'migration.sql']",
+        "F1: expected an 'accept-risk' approval gate",
+        "F2: missing evidence for ['application-usage.md', 'migration.sql']",
+        "F2: expected a scheduling/window statement"
+      ]
+    },
+    {
+      "case_id": "PG-004/run-2",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": true,
+      "required_total": 3,
+      "required_found": 2,
+      "critical_total": 1,
+      "critical_found": 1,
+      "evidence_ok": 0,
+      "evidence_total": 3,
+      "false_positives": 0,
+      "reported_findings": 2,
+      "approval_misses": 2,
+      "destructive_ok": false,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Findings' heading",
+        "no finding carries a known category"
+      ],
+      "missing": [
+        "F3 MEDIUM lock-and-rewrite"
+      ],
+      "notes": [
+        "F1: missing evidence for ['schema.sql', 'migration.sql']",
+        "F1: expected an 'accept-risk' approval gate",
+        "F2: missing evidence for ['application-usage.md', 'migration.sql']",
+        "F2: expected a scheduling/window statement"
+      ]
+    },
+    {
+      "case_id": "PG-004/run-3",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": true,
+      "required_total": 3,
+      "required_found": 3,
+      "critical_total": 1,
+      "critical_found": 1,
+      "evidence_ok": 3,
+      "evidence_total": 3,
+      "false_positives": 0,
+      "reported_findings": 4,
+      "approval_misses": 0,
+      "destructive_ok": true,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading"
+      ],
+      "missing": [],
+      "notes": []
+    },
+    {
+      "case_id": "PG-005/run-1",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": false,
+      "required_total": 3,
+      "required_found": 0,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 3,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": false,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Findings' heading",
+        "no findings parsed"
+      ],
+      "missing": [
+        "F1 HIGH type-change",
+        "F2 HIGH lock-and-rewrite",
+        "F3 MEDIUM operational"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "PG-005/run-2",
+      "kind": "positive",
+      "verdict": "APPROVED",
+      "verdict_ok": false,
+      "required_total": 3,
+      "required_found": 2,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 3,
+      "false_positives": 0,
+      "reported_findings": 3,
+      "approval_misses": 1,
+      "destructive_ok": false,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading"
+      ],
+      "missing": [
+        "F3 MEDIUM operational"
+      ],
+      "notes": [
+        "F1: missing evidence for ['schema.sql', 'migration.sql']",
+        "F1: expected an 'accept-risk' approval gate",
+        "F2: missing evidence for ['migration.sql']"
+      ]
+    },
+    {
+      "case_id": "PG-005/run-3",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": false,
+      "required_total": 3,
+      "required_found": 2,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 3,
+      "false_positives": 0,
+      "reported_findings": 4,
+      "approval_misses": 0,
+      "destructive_ok": true,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading"
+      ],
+      "missing": [
+        "F3 MEDIUM operational"
+      ],
+      "notes": [
+        "F1: missing evidence for ['schema.sql', 'migration.sql']",
+        "F2: missing evidence for ['migration.sql']"
+      ]
+    },
+    {
+      "case_id": "PG-006/run-1",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": false,
+      "required_total": 2,
+      "required_found": 0,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 2,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Verdict' heading",
+        "missing '## Findings' heading",
+        "no findings parsed"
+      ],
+      "missing": [
+        "F1 HIGH index-build",
+        "F2 HIGH index-build"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "PG-006/run-2",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": false,
+      "required_total": 2,
+      "required_found": 1,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 1,
+      "evidence_total": 2,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Findings' heading",
+        "no finding carries an explicit severity",
+        "no finding carries a known category"
+      ],
+      "missing": [
+        "F2 HIGH index-build"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "PG-006/run-3",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": false,
+      "required_total": 2,
+      "required_found": 2,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 2,
+      "evidence_total": 2,
+      "false_positives": 0,
+      "reported_findings": 3,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "no finding carries a known category"
+      ],
+      "missing": [],
+      "notes": []
+    },
+    {
+      "case_id": "PG-007/run-1",
+      "kind": "positive",
+      "verdict": "APPROVED",
+      "verdict_ok": true,
+      "required_total": 1,
+      "required_found": 0,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 1,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "no findings parsed"
+      ],
+      "missing": [
+        "F1 LOW operational"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "PG-007/run-2",
+      "kind": "positive",
+      "verdict": "APPROVED",
+      "verdict_ok": true,
+      "required_total": 1,
+      "required_found": 0,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 1,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Verdict' heading",
+        "no findings parsed"
+      ],
+      "missing": [
+        "F1 LOW operational"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "PG-007/run-3",
+      "kind": "positive",
+      "verdict": "APPROVED",
+      "verdict_ok": true,
+      "required_total": 1,
+      "required_found": 1,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 1,
+      "false_positives": 0,
+      "reported_findings": 1,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading"
+      ],
+      "missing": [],
+      "notes": [
+        "F1: missing evidence for ['migration.sql', 'schema.sql']"
+      ]
+    },
+    {
+      "case_id": "PG-008/run-1",
+      "kind": "positive",
+      "verdict": "APPROVED",
+      "verdict_ok": false,
+      "required_total": 2,
+      "required_found": 0,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 2,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Findings' heading",
+        "no findings parsed"
+      ],
+      "missing": [
+        "F1 HIGH rename",
+        "F2 LOW lock-and-rewrite"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "PG-008/run-2",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": false,
+      "required_total": 2,
+      "required_found": 0,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 2,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Findings' heading",
+        "no findings parsed"
+      ],
+      "missing": [
+        "F1 HIGH rename",
+        "F2 LOW lock-and-rewrite"
+      ],
+      "notes": []
+    },
+    {
+      "case_id": "PG-008/run-3",
+      "kind": "positive",
+      "verdict": "BLOCKED",
+      "verdict_ok": false,
+      "required_total": 2,
+      "required_found": 0,
+      "critical_total": 0,
+      "critical_found": 0,
+      "evidence_ok": 0,
+      "evidence_total": 2,
+      "false_positives": 0,
+      "reported_findings": 0,
+      "approval_misses": 0,
+      "destructive_ok": null,
+      "format_ok": false,
+      "format_notes": [
+        "missing '## Scope' heading",
+        "missing '## Findings' heading",
+        "no findings parsed"
+      ],
+      "missing": [
+        "F1 HIGH rename",
+        "F2 LOW lock-and-rewrite"
+      ],
+      "notes": []
+    }
+  ]
+}
