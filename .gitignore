@@ -42,3 +42,9 @@ evals/workspace/
 # Temporary
 tmp/
 .tmp/
+
+# Local session memory (never published: contains working notes, not project truth)
+.reliant-memory.md
+
+# Local eval baselines and scratch output (not part of the published evidence)
+evals/baseline/

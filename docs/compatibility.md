@@ -73,14 +73,58 @@ through compat layers that different agents discover by default.
 
 | Client | Discovery path | How Reliant exposes it |
 |---|---|---|
-| Claude Code | `.claude/skills/<name>/SKILL.md` | `.claude/skills/migration-guard` points at `skills/migration-guard` |
-| VS Code / GitHub Copilot | `.agents/skills/<name>/SKILL.md` | `.agents/skills/migration-guard` points at the same directory |
-| Any other spec-compliant agent | implementation-defined | Point it at `skills/migration-guard` directly |
+| **Kilo Code** | `skills.paths` in `kilo.json`; also `.kilo/skills/` and `.agents/skills/` | `kilo.json` declares `"skills": {"paths": ["./skills"]}` — no copy, no link |
+| Claude Code | `.claude/skills/<name>/SKILL.md` | needs a link; see below |
+| VS Code / GitHub Copilot | `.agents/skills/<name>/SKILL.md` | needs a link; see below |
+| Any other spec-compliant agent | implementation-defined | point it at `skills/migration-guard` |
 
-The compat layers are links, not copies. `scripts/validate_repo.py` fails if a compat entry resolves to
-a different `SKILL.md` than the source. On Windows checkouts without symlink support, each compat entry
-contains a `symlink.txt` naming the target; treat that as a pointer for manual setup, not as a working
-skill.
+### Kilo Code: the `kilo.json` path is the supported one
+
+Kilo Code reads skills from `skills.paths` in `kilo.json`, from `.kilo/skills/`, and from
+`.agents/skills/` (the open standard directory, loaded by default). The repository uses the first:
+
+```json
+{
+  "skills": { "paths": ["./skills"] }
+}
+```
+
+This is the only option that works **and** can be committed without duplication:
+
+- A copy into `.kilo/skills/` works, but Git then stores the whole skill twice and the copies drift.
+- A junction into `.agents/skills/` or `.kilo/skills/` works locally, but Git follows a junction on
+  Windows and commits every file inside it — the same duplication, silently.
+- `.agents/skills/migration-guard/SKILL.md` does not exist in a fresh checkout, because the repository
+  has `core.symlinks=false` and the compat entry is only a `symlink.txt` pointer.
+
+**Skills are discovered at session start.** After adding or changing `kilo.json`, run `/reload` in a
+new session; an already-open session will not see the skill.
+
+Kilo enforces one extra rule the base spec also states: the frontmatter `name` must match the parent
+directory name. `skills/migration-guard/SKILL.md` declares `name: migration-guard`, which matches.
+
+### The compat layer is inactive as committed
+
+Checked on a fresh clone: `.claude/skills/migration-guard/SKILL.md` and
+`.agents/skills/migration-guard/SKILL.md` do not exist, so an agent that only looks in those paths finds
+nothing. `scripts/validate_repo.py` warns while the pointer file is in place.
+
+To activate one, remove the pointer directory first — every link command refuses an existing target —
+then create the link from the repository root:
+
+```bash
+# macOS / Linux
+rm -rf .agents/skills/migration-guard
+ln -s ../../skills/migration-guard .agents/skills/migration-guard
+
+# Windows (cmd) — a junction needs no Developer Mode
+rmdir /S /Q .agents\skills\migration-guard
+mklink /J .agents\skills\migration-guard skills\migration-guard
+```
+
+Verify: `.agents/skills/migration-guard/SKILL.md` exists. Do **not** replace the pointer with a copied
+directory: git stores the skill twice and the copies drift. That was tried during release verification
+and reverted for exactly that reason.
 
 ### Format conformance
 

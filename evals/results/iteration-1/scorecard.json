@@ -1,26 +1,27 @@
 {
   "metrics": {
-    "critical_finding_recall": 0.6667,
-    "required_finding_recall": 0.5194,
+    "critical_finding_recall": 0.7222,
+    "required_finding_recall": 0.5238,
     "false_positive_rate": 0.0,
     "false_positive_categories": 0,
-    "evidence_coverage": 0.186,
-    "destructive_policy_compliance": 0.2381,
-    "verdict_accuracy": 0.55,
+    "evidence_coverage": 0.0397,
+    "destructive_policy_compliance": 0.1667,
+    "verdict_accuracy": 0.5833,
     "format_compliance": 0.0,
     "cases": 60,
-    "reported_findings": 53
+    "reported_findings": 46
   },
   "targets_met": false,
   "problems": [
-    "critical_finding_recall: 0.6667 vs target 1.0",
-    "required_finding_recall: 0.5194 vs target 0.9",
-    "evidence_coverage: 0.186 vs target 1.0",
-    "destructive_policy_compliance: 0.2381 vs target 1.0",
-    "verdict_accuracy: 0.55 vs target 0.9",
+    "critical_finding_recall: 0.7222 vs target 1.0",
+    "required_finding_recall: 0.5238 vs target 0.9",
+    "evidence_coverage: 0.0397 vs target 1.0",
+    "destructive_policy_compliance: 0.1667 vs target 1.0",
+    "verdict_accuracy: 0.5833 vs target 0.9",
     "format_compliance: 0.0 vs target 0.9"
   ],
   "missing_runs": [],
+  "scorer_version": "0.2",
   "cases": [
     {
       "case_id": "MY-001/run-1",
@@ -36,12 +37,18 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 2,
+      "destructive_ok_count": 0,
       "destructive_ok": false,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
         "missing '## Verdict' heading",
         "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Migration Guard Report \u2014 `2026_11_16_120000_drop_supplier_contact_phone`'",
         "no findings parsed"
       ],
       "missing": [
@@ -53,36 +60,49 @@
     {
       "case_id": "MY-001/run-2",
       "kind": "positive",
-      "verdict": null,
-      "verdict_ok": false,
+      "verdict": "BLOCKED",
+      "verdict_ok": true,
       "required_total": 2,
-      "required_found": 0,
+      "required_found": 2,
       "critical_total": 1,
-      "critical_found": 0,
+      "critical_found": 1,
       "evidence_ok": 0,
       "evidence_total": 2,
       "false_positives": 0,
-      "reported_findings": 1,
-      "approval_misses": 0,
+      "reported_findings": 0,
+      "approval_misses": 2,
+      "destructive_total": 2,
+      "destructive_ok_count": 0,
       "destructive_ok": false,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
+        "missing '## Verdict' heading",
         "missing '## Findings' heading",
-        "no parseable verdict",
-        "no finding carries a known category"
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Verdict: \u26d4 BLOCKER'",
+        "unexpected section '## Evidence'",
+        "unexpected section '## Required before merge'",
+        "unexpected section '## Note'",
+        "no finding carries an explicit severity",
+        "no finding carries a known category",
+        "5 finding heading(s) lack an explicit severity or category"
       ],
-      "missing": [
-        "F1 BLOCKER destructive-column-drop",
-        "F2 HIGH data-integrity"
-      ],
-      "notes": []
+      "missing": [],
+      "notes": [
+        "F1: missing evidence for application-usage.md, migration.sql",
+        "F1: expected an 'accept-risk' approval gate",
+        "F2: missing evidence for migration.sql, context.md",
+        "F2: expected an 'accept-risk' approval gate"
+      ]
     },
     {
       "case_id": "MY-001/run-3",
       "kind": "positive",
-      "verdict": "APPROVED",
-      "verdict_ok": false,
+      "verdict": "BLOCKED",
+      "verdict_ok": true,
       "required_total": 2,
       "required_found": 0,
       "critical_total": 1,
@@ -90,14 +110,27 @@
       "evidence_ok": 0,
       "evidence_total": 2,
       "false_positives": 0,
-      "reported_findings": 1,
+      "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 2,
+      "destructive_ok_count": 0,
       "destructive_ok": false,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
+        "missing '## Verdict' heading",
         "missing '## Findings' heading",
-        "no finding carries a known category"
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Verdict: **BLOCKER**'",
+        "unexpected section '## Summary'",
+        "unexpected section '## Evidence'",
+        "unexpected section '## Aggregate data impact'",
+        "unexpected section '## Deployment / rollback analysis'",
+        "unexpected section '## Recommended remediation'",
+        "unexpected section '## Evidence gaps'",
+        "no findings parsed"
       ],
       "missing": [
         "F1 BLOCKER destructive-column-drop",
@@ -114,19 +147,30 @@
       "required_found": 3,
       "critical_total": 0,
       "critical_found": 0,
-      "evidence_ok": 3,
+      "evidence_ok": 1,
       "evidence_total": 3,
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
-        "no finding carries an explicit severity"
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Required changes before merge'",
+        "unexpected section '## Evidence relied on'",
+        "no finding carries an explicit severity",
+        "5 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [],
-      "notes": []
+      "notes": [
+        "F1: missing evidence for schema.sql, migration.sql",
+        "F2: missing evidence for migration.sql"
+      ]
     },
     {
       "case_id": "MY-002/run-2",
@@ -137,21 +181,32 @@
       "required_found": 3,
       "critical_total": 0,
       "critical_found": 0,
-      "evidence_ok": 1,
+      "evidence_ok": 0,
       "evidence_total": 3,
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
-        "no finding carries an explicit severity"
+        "missing '## Verdict' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Verdict: **BLOCK \u2014 do not merge as written**'",
+        "unexpected section '## Required changes before merge'",
+        "unexpected section '## Summary'",
+        "no finding carries an explicit severity",
+        "4 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [],
       "notes": [
-        "F1: missing evidence for ['schema.sql', 'migration.sql']",
-        "F2: missing evidence for ['migration.sql']"
+        "F1: missing evidence for migration.sql",
+        "F2: missing evidence for migration.sql",
+        "F3: missing evidence for application-usage.md"
       ]
     },
     {
@@ -163,51 +218,76 @@
       "required_found": 3,
       "critical_total": 0,
       "critical_found": 0,
-      "evidence_ok": 3,
+      "evidence_ok": 1,
       "evidence_total": 3,
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
+        "missing '## Verdict' heading",
         "missing '## Findings' heading",
-        "no finding carries an explicit severity"
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Verdict: **BLOCKED \u2014 do not merge as-is**'",
+        "unexpected section '## 1. Correctness \u2014 the `NOT NULL` will conflict with existing data'",
+        "unexpected section '## 2. Write-path gap that survives the backfill'",
+        "unexpected section '## 3. DDL cost, metadata lock, and replication lag'",
+        "unexpected section '## 4. Implicit commit (rollout safety)'",
+        "unexpected section '## Required changes before merge'",
+        "unexpected section '## Summary of evidence relied on'",
+        "no finding carries an explicit severity",
+        "4 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [],
-      "notes": []
+      "notes": [
+        "F2: missing evidence for migration.sql",
+        "F3: missing evidence for application-usage.md"
+      ]
     },
     {
       "case_id": "MY-003/run-1",
       "kind": "positive",
       "verdict": "BLOCKED",
       "verdict_ok": true,
-      "required_total": 4,
-      "required_found": 4,
+      "required_total": 3,
+      "required_found": 3,
       "critical_total": 1,
       "critical_found": 1,
       "evidence_ok": 1,
-      "evidence_total": 4,
+      "evidence_total": 3,
       "false_positives": 0,
       "reported_findings": 0,
-      "approval_misses": 3,
-      "destructive_ok": false,
+      "approval_misses": 1,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
+      "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
         "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Migration under review'",
+        "unexpected section '## Blocking evidence'",
+        "unexpected section '## Additional risks (non-blocking but must be addressed)'",
+        "unexpected section '## Required actions before this can be approved'",
+        "unexpected section '## Summary'",
         "no finding carries an explicit severity",
-        "no finding carries a known category"
+        "no finding carries a known category",
+        "4 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [],
       "notes": [
-        "F1: missing evidence for ['schema.sql', 'migration.sql']",
-        "F1: expected an 'accept-risk' approval gate",
-        "F2: missing evidence for ['migration.sql']",
-        "F2: expected a scheduling/window statement",
-        "F2: missing evidence for ['migration.sql']",
-        "F2: expected a scheduling/window statement"
+        "F1: missing evidence for schema.sql, migration.sql",
+        "F2: missing evidence for migration.sql",
+        "F2: expected a schedule/window/backfill statement"
       ]
     },
     {
@@ -215,29 +295,39 @@
       "kind": "positive",
       "verdict": "BLOCKED",
       "verdict_ok": true,
-      "required_total": 4,
-      "required_found": 4,
+      "required_total": 3,
+      "required_found": 3,
       "critical_total": 1,
       "critical_found": 1,
-      "evidence_ok": 1,
-      "evidence_total": 4,
+      "evidence_ok": 0,
+      "evidence_total": 3,
       "false_positives": 0,
       "reported_findings": 0,
-      "approval_misses": 1,
-      "destructive_ok": false,
+      "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
+      "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
         "missing '## Verdict' heading",
         "missing '## Findings' heading",
-        "no finding carries an explicit severity"
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## 1. Summary of finding'",
+        "unexpected section '## 2. Evidence'",
+        "unexpected section '## 3. Impact on rolling deploy'",
+        "unexpected section '## 4. Required actions before this can merge'",
+        "unexpected section '## 5. Minor notes (not blockers, but worth flagging)'",
+        "no finding carries an explicit severity",
+        "5 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [],
       "notes": [
-        "F1: missing evidence for ['schema.sql', 'migration.sql']",
-        "F1: expected an 'accept-risk' approval gate",
-        "F2: missing evidence for ['migration.sql']",
-        "F2: missing evidence for ['migration.sql']"
+        "F1: missing evidence for schema.sql, migration.sql",
+        "F2: missing evidence for migration.sql",
+        "F3: missing evidence for application-usage.md"
       ]
     },
     {
@@ -245,25 +335,32 @@
       "kind": "positive",
       "verdict": "BLOCKED",
       "verdict_ok": true,
-      "required_total": 4,
+      "required_total": 3,
       "required_found": 0,
       "critical_total": 1,
       "critical_found": 0,
       "evidence_ok": 0,
-      "evidence_total": 4,
+      "evidence_total": 3,
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
-      "destructive_ok": false,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
+      "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
         "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Evidence'",
+        "unexpected section '## What must happen before this is merged'",
+        "unexpected section '## Summary'",
         "no findings parsed"
       ],
       "missing": [
         "F1 BLOCKER unique-constraint",
-        "F2 HIGH index-build",
         "F2 HIGH index-build",
         "F3 MEDIUM application-compatibility"
       ],
@@ -282,19 +379,30 @@
       "evidence_total": 3,
       "false_positives": 0,
       "reported_findings": 3,
-      "approval_misses": 1,
-      "destructive_ok": false,
+      "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
+      "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
-        "missing '## Scope' heading"
+        "missing '## Scope' heading",
+        "missing '## Verdict' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Verdict: **BLOCK** \u2014 do not merge as written'",
+        "unexpected section '## Secondary notes (should be addressed, not blocking by themselves)'",
+        "unexpected section '## Required actions before this can be re-reviewed'",
+        "2 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [
         "F2 HIGH application-compatibility",
         "F3 HIGH lock-and-rewrite"
       ],
       "notes": [
-        "F1: missing evidence for ['schema.sql', 'migration.sql']",
-        "F1: expected an 'accept-risk' approval gate"
+        "F1: missing evidence for schema.sql, migration.sql",
+        "F2: concept found but severity/category wrong (reported BLOCKER, expected HIGH; category unknown, expected application-compatibility)",
+        "F3: concept found but severity/category wrong (reported BLOCKER, expected HIGH; category backfill, expected lock-and-rewrite)"
       ]
     },
     {
@@ -310,19 +418,32 @@
       "evidence_total": 3,
       "false_positives": 0,
       "reported_findings": 3,
-      "approval_misses": 0,
-      "destructive_ok": true,
+      "approval_misses": 1,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
+      "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
-        "no finding carries a known category"
+        "missing '## Verdict' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Verdict: **BLOCK** \u2014 do not merge as written'",
+        "unexpected section '## Required changes before re-submission'",
+        "unexpected section '## Summary'",
+        "no finding carries a known category",
+        "3 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [
         "F2 HIGH application-compatibility",
         "F3 HIGH lock-and-rewrite"
       ],
       "notes": [
-        "F1: missing evidence for ['schema.sql', 'migration.sql']"
+        "F1: missing evidence for schema.sql, migration.sql",
+        "F1: expected 'no approval needed' but a gate was stated",
+        "F2: concept found but severity/category wrong (reported BLOCKER, expected HIGH; category unknown, expected application-compatibility)",
+        "F3: concept found but severity/category wrong (reported BLOCKER, expected HIGH; category unknown, expected lock-and-rewrite)"
       ]
     },
     {
@@ -339,12 +460,21 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
-      "destructive_ok": false,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
+      "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
         "missing '## Verdict' heading",
         "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Blocking issue 1 \u2014 Orphan rows will cause `ADD CONSTRAINT` to fail'",
+        "unexpected section '## Blocking issue 2 \u2014 No `ON DELETE` clause changes existing delete/archive behavior'",
+        "unexpected section '## Additional risks (non-blocking, but must be addressed)'",
+        "unexpected section '## Required changes before merge'",
         "no findings parsed"
       ],
       "missing": [
@@ -368,19 +498,30 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
         "missing '## Verdict' heading",
         "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## 1. Core finding: `ALGORITHM=INSTANT` is not supported for this operation'",
+        "unexpected section '## 2. Why it fails rather than copies'",
+        "unexpected section '## 3. Application impact review'",
+        "unexpected section '## 4. Required changes before merge'",
+        "unexpected section '## 5. Summary table'",
         "no finding carries an explicit severity",
-        "no finding carries a known category"
+        "no finding carries a known category",
+        "5 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [],
       "notes": [
-        "F1: missing evidence for ['migration.sql']",
-        "F2: missing evidence for ['migration.sql', 'schema.sql']"
+        "F1: missing evidence for migration.sql",
+        "F2: missing evidence for migration.sql, schema.sql"
       ]
     },
     {
@@ -392,22 +533,34 @@
       "required_found": 2,
       "critical_total": 0,
       "critical_found": 0,
-      "evidence_ok": 1,
+      "evidence_ok": 0,
       "evidence_total": 2,
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
+        "missing '## Verdict' heading",
         "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Verdict: **BLOCK \u2014 deploy will fail**'",
+        "unexpected section '## Evidence'",
+        "unexpected section '## Fallback (if the change is still desired)'",
+        "unexpected section '## Required actions before merge'",
         "no finding carries an explicit severity",
-        "no finding carries a known category"
+        "no finding carries a known category",
+        "4 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [],
       "notes": [
-        "F2: missing evidence for ['migration.sql', 'schema.sql']"
+        "F1: missing evidence for migration.sql",
+        "F2: missing evidence for migration.sql, schema.sql"
       ]
     },
     {
@@ -424,11 +577,19 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
         "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Evidence'",
+        "unexpected section '## If the change is still desired (correct path)'",
+        "unexpected section '## Pre-merge requirements'",
         "no findings parsed"
       ],
       "missing": [
@@ -451,17 +612,28 @@
       "false_positives": 0,
       "reported_findings": 2,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
-        "no finding carries a known category"
+        "missing '## Verdict' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Verdict: \u274c **DO NOT MERGE \u2014 HIGH RISK**'",
+        "unexpected section '## Required changes before merge'",
+        "unexpected section '## Risk summary'",
+        "no finding carries a known category",
+        "3 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [
         "F2 HIGH lock-and-rewrite"
       ],
       "notes": [
-        "F1: missing evidence for ['migration.sql', 'application-usage.md']"
+        "F1: missing evidence for migration.sql",
+        "F2: concept found but severity/category wrong (reported INFO, expected HIGH; category unknown, expected lock-and-rewrite)"
       ]
     },
     {
@@ -478,11 +650,20 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
         "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Summary'",
+        "unexpected section '## Evidence'",
+        "unexpected section '## Risk classification'",
+        "unexpected section '## Required changes before merge'",
         "no findings parsed"
       ],
       "missing": [
@@ -500,21 +681,35 @@
       "required_found": 1,
       "critical_total": 0,
       "critical_found": 0,
-      "evidence_ok": 1,
+      "evidence_ok": 0,
       "evidence_total": 2,
       "false_positives": 0,
       "reported_findings": 1,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
-        "no finding carries a known category"
+        "missing '## Verdict' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Verdict: **HIGH RISK \u2014 do not merge as written**'",
+        "unexpected section '## Evidence summary'",
+        "unexpected section '## Required changes before merge'",
+        "unexpected section '## Classification'",
+        "no finding carries a known category",
+        "5 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [
         "F1 HIGH lock-and-rewrite"
       ],
-      "notes": []
+      "notes": [
+        "F1: concept found but severity/category wrong (reported INFO, expected HIGH; category unknown, expected lock-and-rewrite)",
+        "F2: missing evidence for migration.sql, schema.sql"
+      ]
     },
     {
       "case_id": "MY-007/run-1",
@@ -530,10 +725,21 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Migration under review'",
+        "unexpected section '## Environment'",
+        "unexpected section '## What the migration does'",
+        "unexpected section '## Checks'",
+        "unexpected section '## Notes on prior false-positive traps'",
+        "sections out of contract order: findings > verdict",
         "no parseable verdict",
         "no findings parsed"
       ],
@@ -551,20 +757,32 @@
       "required_found": 1,
       "critical_total": 0,
       "critical_found": 0,
-      "evidence_ok": 1,
+      "evidence_ok": 0,
       "evidence_total": 1,
       "false_positives": 0,
       "reported_findings": 1,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
         "missing '## Verdict' heading",
-        "no finding carries a known category"
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Summary'",
+        "unexpected section '## Checks performed'",
+        "unexpected section '## Notes on the evidence supplied'",
+        "unexpected section '## Conclusion'",
+        "no finding carries a known category",
+        "1 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [],
-      "notes": []
+      "notes": [
+        "F1: missing evidence for migration.sql, schema.sql"
+      ]
     },
     {
       "case_id": "MY-007/run-3",
@@ -580,10 +798,21 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
+        "missing '## Verdict' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Verdict: **APPROVED**'",
+        "unexpected section '## Summary'",
+        "unexpected section '## Evidence'",
+        "unexpected section '## Notes (non-blocking)'",
+        "unexpected section '## Conclusion'",
         "no findings parsed"
       ],
       "missing": [
@@ -604,20 +833,30 @@
       "evidence_total": 2,
       "false_positives": 0,
       "reported_findings": 0,
-      "approval_misses": 1,
+      "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
         "missing '## Verdict' heading",
         "missing '## Findings' heading",
-        "no finding carries an explicit severity"
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## 1. Migration under review'",
+        "unexpected section '## 2. Why it still fails'",
+        "unexpected section '## 3. Failure timeline (as written)'",
+        "unexpected section '## 4. Required changes before merge'",
+        "unexpected section '## 5. Summary'",
+        "no finding carries an explicit severity",
+        "5 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [],
       "notes": [
-        "F1: missing evidence for ['application-usage.md', 'migration.sql', 'context.md']",
-        "F1: expected an 'accept-risk' approval gate",
-        "F2: missing evidence for ['migration.sql']"
+        "F1: missing evidence for application-usage.md, migration.sql, context.md",
+        "F2: missing evidence for migration.sql"
       ]
     },
     {
@@ -633,19 +872,31 @@
       "evidence_total": 2,
       "false_positives": 0,
       "reported_findings": 0,
-      "approval_misses": 1,
+      "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
+        "missing '## Verdict' heading",
         "missing '## Findings' heading",
-        "no finding carries an explicit severity"
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Migration under review'",
+        "unexpected section '## Verdict: \u274c BLOCK \u2014 do not merge as-is'",
+        "unexpected section '## Evidence'",
+        "unexpected section '## What is actually fine (so the fix isn't over-engineered)'",
+        "unexpected section '## Recommended remediation \u2014 expand / contract, not a rename-in-place'",
+        "unexpected section '## Summary table'",
+        "no finding carries an explicit severity",
+        "4 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [],
       "notes": [
-        "F1: missing evidence for ['application-usage.md', 'migration.sql', 'context.md']",
-        "F1: expected an 'accept-risk' approval gate",
-        "F2: missing evidence for ['migration.sql']"
+        "F1: missing evidence for application-usage.md, migration.sql",
+        "F2: missing evidence for migration.sql"
       ]
     },
     {
@@ -661,17 +912,26 @@
       "evidence_total": 2,
       "false_positives": 0,
       "reported_findings": 4,
-      "approval_misses": 1,
+      "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
-        "missing '## Scope' heading"
+        "missing '## Scope' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Migration under review'",
+        "unexpected section '## Target'",
+        "unexpected section '## What the developer got right / wrong'",
+        "unexpected section '## Required before merge'",
+        "1 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [],
       "notes": [
-        "F1: missing evidence for ['application-usage.md', 'migration.sql', 'context.md']",
-        "F1: expected an 'accept-risk' approval gate",
-        "F2: missing evidence for ['migration.sql']"
+        "F1: missing evidence for application-usage.md, migration.sql, context.md",
+        "F2: missing evidence for migration.sql"
       ]
     },
     {
@@ -688,10 +948,18 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
+        "missing '## Verdict' heading",
+        "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Migration Guard Report \u2014 NEG-001'",
         "no findings parsed"
       ],
       "missing": [
@@ -711,14 +979,25 @@
       "evidence_ok": 0,
       "evidence_total": 1,
       "false_positives": 0,
-      "reported_findings": 1,
+      "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
+        "missing '## Verdict' heading",
         "missing '## Findings' heading",
-        "no finding carries a known category"
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Verdict: **APPROVED** (finding severity: `LOW`)'",
+        "unexpected section '## Migration under review'",
+        "unexpected section '## Analysis'",
+        "unexpected section '## Finding'",
+        "unexpected section '## Recommendation'",
+        "no findings parsed"
       ],
       "missing": [
         "F1 LOW operational"
@@ -739,12 +1018,22 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
         "missing '## Verdict' heading",
         "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Summary'",
+        "unexpected section '## Evidence reviewed'",
+        "unexpected section '## Risk assessment'",
+        "unexpected section '## Required actions'",
+        "unexpected section '## Explicitly not flagged (avoiding false positives)'",
         "no findings parsed"
       ],
       "missing": [
@@ -766,11 +1055,18 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
         "missing '## Verdict' heading",
+        "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Migration Guard Report \u2014 NEG-002'",
         "no findings parsed"
       ],
       "missing": [
@@ -787,19 +1083,29 @@
       "required_found": 1,
       "critical_total": 0,
       "critical_found": 0,
-      "evidence_ok": 1,
+      "evidence_ok": 0,
       "evidence_total": 1,
       "false_positives": 0,
       "reported_findings": 2,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
-        "no finding carries a known category"
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Checks performed \u2014 no issues found'",
+        "sections out of contract order: findings > verdict",
+        "no finding carries a known category",
+        "2 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [],
-      "notes": []
+      "notes": [
+        "F1: missing evidence for migration.sql"
+      ]
     },
     {
       "case_id": "NEG-002/run-3",
@@ -815,11 +1121,18 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
         "missing '## Verdict' heading",
+        "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Migration Guard Report \u2014 NEG-002'",
         "no findings parsed"
       ],
       "missing": [
@@ -839,13 +1152,24 @@
       "evidence_ok": 0,
       "evidence_total": 1,
       "false_positives": 0,
-      "reported_findings": 1,
+      "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
-        "no finding carries a known category"
+        "missing '## Verdict' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Verdict: **APPROVED** with **LOW** finding'",
+        "unexpected section '## Change summary'",
+        "unexpected section '## Evidence review'",
+        "unexpected section '## Explicitly not flagged (guards against false positives)'",
+        "unexpected section '## Recommendation'",
+        "no findings parsed"
       ],
       "missing": [
         "F1 LOW operational"
@@ -866,10 +1190,20 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Summary'",
+        "unexpected section '## Migration reviewed'",
+        "unexpected section '## Evidence'",
+        "unexpected section '## Explicitly not flagged (would be false positives)'",
+        "sections out of contract order: findings > verdict",
         "no findings parsed"
       ],
       "missing": [
@@ -891,10 +1225,18 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
+        "missing '## Verdict' heading",
+        "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Migration Guard Report \u2014 NEG-003'",
         "no findings parsed"
       ],
       "missing": [
@@ -914,13 +1256,21 @@
       "evidence_ok": 0,
       "evidence_total": 1,
       "false_positives": 0,
-      "reported_findings": 1,
+      "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
-        "no finding carries a known category"
+        "missing '## Verdict' heading",
+        "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Migration Guard Report \u2014 NEG-004'",
+        "no findings parsed"
       ],
       "missing": [
         "F1 LOW operational"
@@ -939,16 +1289,27 @@
       "evidence_ok": 0,
       "evidence_total": 1,
       "false_positives": 0,
-      "reported_findings": 3,
+      "reported_findings": 2,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
-        "missing '## Scope' heading"
+        "missing '## Scope' heading",
+        "missing '## Verdict' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Verdict: \u2705 APPROVED (LOW finding)'",
+        "unexpected section '## Summary'",
+        "unexpected section '## Type note (informational, not a finding)'",
+        "unexpected section '## Recommendation'",
+        "5 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [],
       "notes": [
-        "F1: missing evidence for ['migration.sql', 'context.md']"
+        "F1: missing evidence for migration.sql, context.md"
       ]
     },
     {
@@ -965,11 +1326,18 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
         "missing '## Verdict' heading",
+        "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Migration Guard Report \u2014 NEG-004'",
         "no findings parsed"
       ],
       "missing": [
@@ -991,12 +1359,18 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
-      "destructive_ok": true,
+      "destructive_total": 2,
+      "destructive_ok_count": 0,
+      "destructive_ok": false,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
         "missing '## Verdict' heading",
         "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Migration Guard Report \u2014 PG-001'",
         "no findings parsed"
       ],
       "missing": [
@@ -1020,21 +1394,33 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 2,
+      "destructive_total": 2,
+      "destructive_ok_count": 0,
       "destructive_ok": false,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
+        "missing '## Verdict' heading",
         "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Migration under review'",
+        "unexpected section '## Verdict: **BLOCK \u2014 do not merge**'",
+        "unexpected section '## Evidence'",
+        "unexpected section '## What must happen before this merge'",
+        "unexpected section '## Summary table'",
         "no finding carries an explicit severity",
-        "no finding carries a known category"
+        "no finding carries a known category",
+        "7 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [
         "F3 MEDIUM lock-and-rewrite"
       ],
       "notes": [
-        "F1: missing evidence for ['application-usage.md', 'migration.sql']",
+        "F1: missing evidence for migration.sql",
         "F1: expected an 'accept-risk' approval gate",
-        "F2: missing evidence for ['migration.sql', 'schema.sql']",
+        "F2: missing evidence for migration.sql, schema.sql",
         "F2: expected an 'accept-risk' approval gate"
       ]
     },
@@ -1052,19 +1438,28 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 2,
+      "destructive_ok_count": 2,
       "destructive_ok": true,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
         "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Evidence'",
+        "unexpected section '## Two distinct problems'",
+        "unexpected section '## Required remediation'",
         "no finding carries an explicit severity",
-        "no finding carries a known category"
+        "no finding carries a known category",
+        "5 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [],
       "notes": [
-        "F1: missing evidence for ['application-usage.md', 'migration.sql']",
-        "F2: missing evidence for ['migration.sql', 'schema.sql']",
-        "F3: missing evidence for ['migration.sql']"
+        "F1: missing evidence for application-usage.md, migration.sql",
+        "F2: missing evidence for migration.sql, schema.sql",
+        "F3: missing evidence for migration.sql"
       ]
     },
     {
@@ -1073,25 +1468,42 @@
       "verdict": "BLOCKED",
       "verdict_ok": false,
       "required_total": 3,
-      "required_found": 3,
+      "required_found": 2,
       "critical_total": 0,
       "critical_found": 0,
-      "evidence_ok": 1,
+      "evidence_ok": 0,
       "evidence_total": 3,
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
+        "missing '## Verdict' heading",
         "missing '## Findings' heading",
-        "no finding carries an explicit severity"
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Verdict: \ud83d\udd34 **BLOCK \u2014 do not merge**'",
+        "unexpected section '## 1. Data conflict: NULL rows exist'",
+        "unexpected section '## 2. Lock / performance hazard'",
+        "unexpected section '## 3. Write-path breakage even after backfill'",
+        "unexpected section '## 4. Things that are fine'",
+        "unexpected section '## Recommended migration sequence'",
+        "unexpected section '## Evidence summary'",
+        "no finding carries an explicit severity",
+        "4 finding heading(s) lack an explicit severity or category"
       ],
-      "missing": [],
+      "missing": [
+        "F3 MEDIUM lock-and-rewrite"
+      ],
       "notes": [
-        "F1: missing evidence for ['schema.sql', 'migration.sql']",
-        "F3: missing evidence for ['migration.sql']"
+        "F1: missing evidence for schema.sql, migration.sql",
+        "F2: missing evidence for application-usage.md",
+        "F3: concept found but severity/category wrong (reported INFO, expected MEDIUM; category unknown, expected lock-and-rewrite)"
       ]
     },
     {
@@ -1103,21 +1515,30 @@
       "required_found": 3,
       "critical_total": 0,
       "critical_found": 0,
-      "evidence_ok": 1,
+      "evidence_ok": 0,
       "evidence_total": 3,
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
-        "no finding carries an explicit severity"
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Recommended sequence (instead of `migration.sql`)'",
+        "unexpected section '## Residual risk / notes'",
+        "no finding carries an explicit severity",
+        "3 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [],
       "notes": [
-        "F1: missing evidence for ['schema.sql', 'migration.sql']",
-        "F2: missing evidence for ['application-usage.md']"
+        "F1: missing evidence for schema.sql, migration.sql",
+        "F2: missing evidence for application-usage.md",
+        "F3: missing evidence for migration.sql"
       ]
     },
     {
@@ -1134,11 +1555,23 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
+        "missing '## Verdict' heading",
         "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Verdict: **BLOCK \u2014 do not merge as written**'",
+        "unexpected section '## Evidence'",
+        "unexpected section '## The `NULL` problem is a policy problem, not a backfill'",
+        "unexpected section '## Rewrite: safe `NOT NULL` sequence'",
+        "unexpected section '## Ordering and deploy constraints'",
+        "unexpected section '## Summary of what's shipping now vs. the rewrite'",
         "no findings parsed"
       ],
       "missing": [
@@ -1161,19 +1594,29 @@
       "evidence_total": 3,
       "false_positives": 0,
       "reported_findings": 4,
-      "approval_misses": 1,
-      "destructive_ok": false,
+      "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
+      "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
         "missing '## Verdict' heading",
-        "missing '## Findings' heading"
+        "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Finding 1 \u2014 BLOCKER: `ADD CONSTRAINT ... UNIQUE` will fail on existing duplicate rows'",
+        "unexpected section '## Finding 2 \u2014 HIGH: lock held is `ACCESS EXCLUSIVE`, unsafe on a hot 2.1M-row table'",
+        "unexpected section '## Finding 3 \u2014 MEDIUM (design/correctness): case sensitivity mismatch will not fix the login bug'",
+        "unexpected section '## Finding 4 \u2014 LOW: application-layer check should remain but is not a guarantee'",
+        "unexpected section '## Required changes before merge'",
+        "3 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [],
       "notes": [
-        "F1: missing evidence for ['schema.sql', 'migration.sql']",
-        "F1: expected an 'accept-risk' approval gate",
-        "F2: missing evidence for ['migration.sql']"
+        "F1: missing evidence for migration.sql",
+        "F2: missing evidence for migration.sql"
       ]
     },
     {
@@ -1185,24 +1628,35 @@
       "required_found": 2,
       "critical_total": 1,
       "critical_found": 1,
-      "evidence_ok": 2,
+      "evidence_ok": 0,
       "evidence_total": 3,
       "false_positives": 0,
       "reported_findings": 2,
-      "approval_misses": 2,
-      "destructive_ok": false,
+      "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
+      "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
         "missing '## Findings' heading",
-        "no finding carries a known category"
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Evidence'",
+        "unexpected section '## Why the developer's diagnosis is right but the fix is wrong'",
+        "unexpected section '## Required changes before merge'",
+        "unexpected section '## Rollback consideration'",
+        "no finding carries a known category",
+        "4 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [
         "F3 MEDIUM application-compatibility"
       ],
       "notes": [
-        "F1: expected an 'accept-risk' approval gate",
-        "F2: expected a scheduling/window statement"
+        "F1: missing evidence for schema.sql, migration.sql",
+        "F2: missing evidence for migration.sql",
+        "F3: concept found but severity/category wrong (reported INFO, expected MEDIUM; category unknown, expected application-compatibility)"
       ]
     },
     {
@@ -1218,21 +1672,30 @@
       "evidence_total": 3,
       "false_positives": 0,
       "reported_findings": 3,
-      "approval_misses": 2,
-      "destructive_ok": false,
+      "approval_misses": 1,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
+      "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
-        "no finding carries a known category"
+        "missing '## Verdict' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Verdict: **BLOCKER** \u2014 do not merge as written'",
+        "unexpected section '## Required changes before merge'",
+        "unexpected section '## Summary'",
+        "no finding carries a known category",
+        "3 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [
         "F3 MEDIUM application-compatibility"
       ],
       "notes": [
-        "F1: missing evidence for ['schema.sql', 'migration.sql']",
-        "F1: expected an 'accept-risk' approval gate",
-        "F2: missing evidence for ['migration.sql']",
-        "F2: expected a scheduling/window statement"
+        "F1: missing evidence for schema.sql, migration.sql",
+        "F2: missing evidence for migration.sql",
+        "F2: expected a schedule/window/backfill statement"
       ]
     },
     {
@@ -1248,23 +1711,33 @@
       "evidence_total": 3,
       "false_positives": 0,
       "reported_findings": 3,
-      "approval_misses": 2,
-      "destructive_ok": false,
+      "approval_misses": 1,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
+      "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
         "missing '## Verdict' heading",
         "missing '## Findings' heading",
-        "no finding carries a known category"
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Blockers'",
+        "unexpected section '## High-severity compatibility risk'",
+        "unexpected section '## Locking / operational notes (informational)'",
+        "unexpected section '## Recommended path (not a merge approval)'",
+        "no finding carries a known category",
+        "3 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [
         "F3 MEDIUM lock-and-rewrite"
       ],
       "notes": [
-        "F1: missing evidence for ['schema.sql', 'migration.sql']",
-        "F1: expected an 'accept-risk' approval gate",
-        "F2: missing evidence for ['application-usage.md', 'migration.sql']",
-        "F2: expected a scheduling/window statement"
+        "F1: missing evidence for schema.sql, migration.sql",
+        "F2: missing evidence for migration.sql",
+        "F2: expected a schedule/window/backfill statement",
+        "F3: concept found but severity/category wrong (reported BLOCKER, expected MEDIUM; category unknown, expected lock-and-rewrite)"
       ]
     },
     {
@@ -1280,22 +1753,34 @@
       "evidence_total": 3,
       "false_positives": 0,
       "reported_findings": 2,
-      "approval_misses": 2,
-      "destructive_ok": false,
+      "approval_misses": 1,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
+      "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
+        "missing '## Verdict' heading",
         "missing '## Findings' heading",
-        "no finding carries a known category"
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Verdict: **BLOCKED \u2014 do not merge**'",
+        "unexpected section '## Finding 1 \u2014 BLOCKER: orphan rows violate the FK; the migration will not apply'",
+        "unexpected section '## Finding 2 \u2014 HIGH: default `NO ACTION` breaks the hard-delete endpoint'",
+        "unexpected section '## Rollout notes (secondary)'",
+        "unexpected section '## Summary'",
+        "no finding carries a known category",
+        "2 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [
         "F3 MEDIUM lock-and-rewrite"
       ],
       "notes": [
-        "F1: missing evidence for ['schema.sql', 'migration.sql']",
-        "F1: expected an 'accept-risk' approval gate",
-        "F2: missing evidence for ['application-usage.md', 'migration.sql']",
-        "F2: expected a scheduling/window statement"
+        "F1: missing evidence for schema.sql, migration.sql",
+        "F2: missing evidence for application-usage.md, migration.sql",
+        "F2: expected a schedule/window/backfill statement",
+        "F3: concept found but severity/category wrong (reported BLOCKER, expected MEDIUM; category unknown, expected lock-and-rewrite)"
       ]
     },
     {
@@ -1307,18 +1792,36 @@
       "required_found": 3,
       "critical_total": 1,
       "critical_found": 1,
-      "evidence_ok": 3,
+      "evidence_ok": 1,
       "evidence_total": 3,
       "false_positives": 0,
       "reported_findings": 4,
-      "approval_misses": 0,
-      "destructive_ok": true,
+      "approval_misses": 3,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
+      "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
-        "missing '## Scope' heading"
+        "missing '## Scope' heading",
+        "missing '## Verdict' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Verdict: **BLOCK \u2014 do not merge as written**'",
+        "unexpected section '## Statement under review'",
+        "unexpected section '## Remediation plan (all required before merge)'",
+        "unexpected section '## Do **not** accept'",
+        "unexpected section '## Sign-off checklist'",
+        "3 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [],
-      "notes": []
+      "notes": [
+        "F1: missing evidence for schema.sql, migration.sql",
+        "F1: expected 'no approval needed' but a gate was stated",
+        "F2: expected a schedule/window/backfill statement",
+        "F3: missing evidence for migration.sql",
+        "F3: expected a schedule/window/backfill statement"
+      ]
     },
     {
       "case_id": "PG-005/run-1",
@@ -1334,11 +1837,21 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
-      "destructive_ok": false,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
+      "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
         "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Migration Under Review'",
+        "unexpected section '## Evidence'",
+        "unexpected section '## Required Fixes Before Merge'",
+        "unexpected section '## Checklist'",
+        "unexpected section '## Bottom Line'",
         "no findings parsed"
       ],
       "missing": [
@@ -1361,19 +1874,28 @@
       "evidence_total": 3,
       "false_positives": 0,
       "reported_findings": 3,
-      "approval_misses": 1,
-      "destructive_ok": false,
+      "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
+      "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
-        "missing '## Scope' heading"
+        "missing '## Scope' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Severity classification'",
+        "unexpected section '## Required before merge'",
+        "sections out of contract order: findings > verdict",
+        "3 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [
         "F3 MEDIUM operational"
       ],
       "notes": [
-        "F1: missing evidence for ['schema.sql', 'migration.sql']",
-        "F1: expected an 'accept-risk' approval gate",
-        "F2: missing evidence for ['migration.sql']"
+        "F1: missing evidence for schema.sql, migration.sql",
+        "F2: missing evidence for migration.sql",
+        "F3: concept found but severity/category wrong (reported HIGH, expected MEDIUM; category operational, expected operational)"
       ]
     },
     {
@@ -1389,18 +1911,27 @@
       "evidence_total": 3,
       "false_positives": 0,
       "reported_findings": 4,
-      "approval_misses": 0,
-      "destructive_ok": true,
+      "approval_misses": 1,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
+      "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
-        "missing '## Scope' heading"
+        "missing '## Scope' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Recommendation'",
+        "4 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [
         "F3 MEDIUM operational"
       ],
       "notes": [
-        "F1: missing evidence for ['schema.sql', 'migration.sql']",
-        "F2: missing evidence for ['migration.sql']"
+        "F1: missing evidence for schema.sql, migration.sql",
+        "F1: expected 'no approval needed' but a gate was stated",
+        "F2: missing evidence for migration.sql",
+        "F3: concept found but severity/category wrong (reported HIGH, expected MEDIUM; category operational, expected operational)"
       ]
     },
     {
@@ -1417,12 +1948,24 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
         "missing '## Verdict' heading",
         "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Summary'",
+        "unexpected section '## Evidence'",
+        "unexpected section '## What happens on deploy'",
+        "unexpected section '## Secondary hazard \u2014 invalid index on retry (important)'",
+        "unexpected section '## Related observations (not blocking, but note)'",
+        "unexpected section '## Required changes before merge'",
+        "unexpected section '## Bottom line'",
         "no findings parsed"
       ],
       "missing": [
@@ -1440,23 +1983,34 @@
       "required_found": 1,
       "critical_total": 0,
       "critical_found": 0,
-      "evidence_ok": 1,
+      "evidence_ok": 0,
       "evidence_total": 2,
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
         "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Evidence'",
+        "unexpected section '## Required fix'",
+        "unexpected section '## Secondary observations (non-blocking, for the PR author)'",
         "no finding carries an explicit severity",
-        "no finding carries a known category"
+        "no finding carries a known category",
+        "2 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [
         "F2 HIGH index-build"
       ],
-      "notes": []
+      "notes": [
+        "F1: missing evidence for migration.sql, context.md"
+      ]
     },
     {
       "case_id": "PG-006/run-3",
@@ -1467,19 +2021,32 @@
       "required_found": 2,
       "critical_total": 0,
       "critical_found": 0,
-      "evidence_ok": 2,
+      "evidence_ok": 0,
       "evidence_total": 2,
       "false_positives": 0,
-      "reported_findings": 3,
+      "reported_findings": 2,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
-        "no finding carries a known category"
+        "missing '## Verdict' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Verdict: \u274c NOT READY TO SHIP (HIGH)'",
+        "unexpected section '## Required fix'",
+        "unexpected section '## Summary'",
+        "no finding carries a known category",
+        "3 finding heading(s) lack an explicit severity or category"
       ],
       "missing": [],
-      "notes": []
+      "notes": [
+        "F1: missing evidence for migration.sql, context.md",
+        "F2: missing evidence for migration.sql"
+      ]
     },
     {
       "case_id": "PG-007/run-1",
@@ -1495,10 +2062,18 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
+        "missing '## Verdict' heading",
+        "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Migration Guard Report \u2014 PG-007'",
         "no findings parsed"
       ],
       "missing": [
@@ -1520,11 +2095,18 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
         "missing '## Verdict' heading",
+        "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Migration Guard Report \u2014 PG-007'",
         "no findings parsed"
       ],
       "missing": [
@@ -1546,14 +2128,26 @@
       "false_positives": 0,
       "reported_findings": 1,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
-        "missing '## Scope' heading"
+        "missing '## Scope' heading",
+        "missing '## Verdict' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Verdict: \u2705 APPROVED'",
+        "unexpected section '## Risk assessment by category'",
+        "unexpected section '## Evidence reviewed'",
+        "unexpected section '## Not searched / Out of scope'",
+        "unexpected section '## Notes (non-blocking, informational)'",
+        "unexpected section '## Recommendation'"
       ],
       "missing": [],
       "notes": [
-        "F1: missing evidence for ['migration.sql', 'schema.sql']"
+        "F1: missing evidence for migration.sql, schema.sql"
       ]
     },
     {
@@ -1570,11 +2164,24 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
+        "missing '## Verdict' heading",
         "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Verdict: \u274c NOT SAFE TO MERGE AS-IS'",
+        "unexpected section '## Lock analysis (the part that *is* fine)'",
+        "unexpected section '## Deploy-order incompatibility (the actual defect)'",
+        "unexpected section '## Background job breakage'",
+        "unexpected section '## What I confirmed safe'",
+        "unexpected section '## Required changes to make this shippable'",
+        "unexpected section '## Summary table'",
         "no findings parsed"
       ],
       "missing": [
@@ -1597,11 +2204,25 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
+        "missing '## Verdict' heading",
         "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Verdict: \ud83d\udeab UNSAFE \u2014 do not merge as-is'",
+        "unexpected section '## Code touched by this migration'",
+        "unexpected section '## Deploy-order analysis (the actual risk)'",
+        "unexpected section '## What the migration does right'",
+        "unexpected section '## Why \"the rename is instant\" is not the safety argument'",
+        "unexpected section '## Not covered by this report'",
+        "unexpected section '## Required changes before merge'",
+        "unexpected section '## Summary'",
         "no findings parsed"
       ],
       "missing": [
@@ -1624,11 +2245,23 @@
       "false_positives": 0,
       "reported_findings": 0,
       "approval_misses": 0,
+      "destructive_total": 0,
+      "destructive_ok_count": 0,
       "destructive_ok": null,
       "format_ok": false,
       "format_notes": [
         "missing '## Scope' heading",
+        "missing '## Verdict' heading",
         "missing '## Findings' heading",
+        "missing '## Safer migration path' heading",
+        "missing '## Rollback and recovery' heading",
+        "missing '## Pre-deploy checklist' heading",
+        "unexpected section '## Migration under review'",
+        "unexpected section '## Verdict: **BLOCK \u2014 not safe to merge as-is**'",
+        "unexpected section '## Evidence'",
+        "unexpected section '## Why the lock analysis is misleading here'",
+        "unexpected section '## Required changes before merge'",
+        "unexpected section '## Summary'",
         "no findings parsed"
       ],
       "missing": [

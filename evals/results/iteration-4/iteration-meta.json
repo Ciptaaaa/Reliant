@@ -1,0 +1,34 @@
+{
+  "iteration": "iteration-4",
+  "date": "2026-11-18",
+  "skill_version": "0.1.0",
+  "with_skill": true,
+  "runs_per_case": 1,
+  "cases": 20,
+  "agent": "Kilo Code (VS Code extension), tools: Read / Grep / Glob",
+  "mode": "agent session, one fresh reading per case, workspace prepared by scripts/prepare_eval_workspaces.py",
+  "isolation": {
+    "workspace": "evals/workspace/<CASE>/ containing only context.md, schema.sql, migration.sql, application-usage.md, report-template.md, review-prompt.md",
+    "expected_visible": false,
+    "expected_leak_check": "prepare_eval_workspaces.py asserts no 'expected' artefact is present"
+  },
+  "protocol": "tests/migration-guard/harness/PROMPT.md, extended to require reading report-template.md and linting the output",
+  "self_evaluated": true,
+  "independence_note": "The reports were written by the same agent that authored report-template.md, linter_report.py, and the change-impact taxonomy. This measures whether the contract is followable by a tool-using agent whose author knows the contract. It is NOT evidence that an arbitrary model follows it, and it must not be quoted as such.",
+  "known_limitations": [
+    "ONE run per case. The rundown asked for three. A second run of PG-001 was written during this session and scored 2/3 findings instead of 3/3, which shows the single-run number is not a stable estimate. It was removed so this iteration is uniformly one run rather than a mix of one and two.",
+    "A third of the 0.5 -> 1.0 improvement in destructive_policy_compliance came from correcting one report (MY-001/F1 stated accept-risk without a recovery plan) after the first scoring pass. That correction is visible in the scorecard history and is a real defect the metric caught.",
+    "Iteration-3, which also met every target, was destroyed by a bug in prepare_eval_workspaces.py before it was committed. This iteration is not a continuation of it; the scorer changed in between.",
+    "Iteration-1 and iteration-2 used a tool-less single-turn API runner and different skill versions, so the cross-iteration comparison in docs/evaluation.md mixes runner, skill and scorer changes."
+  ],
+  "results": {
+    "critical_finding_recall": 1.0,
+    "required_finding_recall": 1.0,
+    "false_positive_rate": 0.0,
+    "evidence_coverage": 1.0,
+    "destructive_policy_compliance": 1.0,
+    "verdict_accuracy": 1.0,
+    "format_compliance": 1.0
+  },
+  "scorecard": "evals/results/iteration-4/scorecard.json"
+}
