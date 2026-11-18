@@ -13,12 +13,35 @@ Computes:
     critical_finding_recall          required findings with critical=true that were found
     required_finding_recall          all required findings that were found
     false_positive_rate              forbidden-category hits / findings reported on negative cases
-    evidence_coverage                required findings whose must_cite_evidence paths appear in report
-    destructive_policy_compliance    destructive cases where an approval gate is stated
+    evidence_coverage                required findings whose must_cite_evidence paths appear inside that finding
+    destructive_policy_compliance    irreversible findings that state an approval gate and a recovery plan
     verdict_accuracy                 runs whose verdict is an allowed verdict
+    format_compliance                runs that follow the six-heading contract (see scripts/linter_report.py)
 
 Exit code 0 when every metric meets its target in docs/evaluation.md, 1 otherwise (unless --report-only).
 Stdlib only; no third-party dependencies.
+
+Changes in v0.2 of this scorer (2026-11-18)
+-------------------------------------------
+Iterations 1-2 were scored by a version that measured some things wrongly. Each fix below is
+justified in docs/evaluation.md §8. None of them touches tests/migration-guard/expected/.
+
+1. Evidence was credited when the fixture filename appeared *anywhere* in the report. The contract
+   asks for the path the evidence lives at, cited *inside the finding*. Evidence is now searched in
+   the finding body, and a real `path:line` inside the fixture file counts (that is the stronger
+   form, and the one the skill asks for).
+2. Destructive policy was scored once per *case*; it is now scored per irreversible *finding*.
+3. `APPROVAL_RE` matched "human approval" inside "no human approval needed", so a correct approval
+   `none` failed. Negated forms are now excluded.
+4. A `schedule` expectation could be satisfied by any approval gate; it now needs a window/backfill
+   statement.
+5. Format compliance used a three-heading subset that no skill document defined. It now checks the
+   six headings the contract actually names, and reports the specific deviation.
+6. `score_case` was called without `case_dir`, so `_evidence_present` could never resolve a fixture
+   filename to the paths documented inside it.
+7. Reports that state severity but never reach the expected level were only half-credited (recall
+   skipped them while format compliance ignored the mismatch). Mismatches now always count as misses
+   and are visible in the run row as `sev_mismatch`.
 """
 
 from __future__ import annotations
@@ -72,6 +95,7 @@ class Finding:
     # True when the report explicitly stated a severity, either in the heading or a "**Risk: X**" line.
     # False means the parser defaulted it; recall can still credit the finding, format compliance cannot.
     explicit_severity: bool = False
+    lineno: int = 0  # 1-based line of the heading, for diagnostics
 
     @property
     def text(self) -> str:
@@ -85,6 +109,8 @@ class Report:
     sections: set[str] = field(default_factory=set)
     raw: str = ""
     has_approval_gate: bool = False
+    # Deviation strings from the contract check, empty when the report conforms.
+    format_problems: list[str] = field(default_factory=list)
 
 
 # Verdict tokens as actually written by models, normalised to the canonical three.
@@ -109,13 +135,35 @@ VERDICT_RE = re.compile(
 # A line like "**Risk: LOW**" carries severity outside a finding heading.
 RISK_LINE_RE = re.compile(r"\*\*\s*risk\s*:?\s*(BLOCKER|HIGH|MEDIUM|LOW|INFO)\b", re.IGNORECASE)
 
+# An approval phrase, without any negation handling. Negation is decided per clause in
+# `_has_approval_gate`, because a look-back window only ever covers the phrasings its author thought of:
+# "no human approval needed" was handled, "do not approve before …" was not.
 APPROVAL_RE = re.compile(
-    r"(accept[- ]risk|accept the risk|human approval|requires? approval|approval required|"
+    r"(?:accept[- ]the[- ]risk|accept[- ]risk|human approval|requires? approval|approval required|"
+    r"approv(?:e|al)\s+(?:is\s+)?(?:required|needed)|needs?\s+(?:human\s+)?approval|"
     r"sign-?off|approve before|persetujuan)",
     re.IGNORECASE,
 )
-SCHEDULE_RE = re.compile(r"(schedule|window|maintenance window|jadwal|throttle)", re.IGNORECASE)
+SCHEDULE_RE = re.compile(
+    r"(schedule|scheduled|window|maintenance|throttl|off-peak|low-traffic|backfill|batch|jadwal)", re.IGNORECASE
+)
+RECOVERY_RE = re.compile(
+    r"(recovery|restore|backup|snapshot|restore point|point-in-time|PITR|rollback plan|pulihkan|cadangan)",
+    re.IGNORECASE,
+)
 REVERSIBLE_NONE_RE = re.compile(r"(approval required\W*:?\s*`?none`?|reversible|no approval)", re.IGNORECASE)
+# A citation must carry a line number. `CITATION_RE` accepts a bare filename because it is also used to
+# discover references mentioned inside a fixture; evidence acceptance is stricter (see _has_citation).
+CITATION_RE = re.compile(
+    r"[A-Za-z0-9_.\-/]*[A-Za-z0-9_.\-]+\.(?:rb|py|php|ts|tsx|js|jsx|go|java|kt|cs|sql|md|yml|yaml|json|rake|sh)"
+    r"(?::\d+)?"
+)
+# The form the contract actually asks for: a file path plus a line, optionally a range or a
+# "line N" phrasing, so `prices.yml` (a file with no lines to open) does not pass as evidence.
+PATH_LINE_RE = re.compile(
+    r"[A-Za-z0-9_.\-/]*[A-Za-z0-9_.\-]+\.[A-Za-z0-9]+(?::\d+(?:\s*[-–]\s*\d+)?|\s+line\s+\d+|#L\d+)",
+    re.IGNORECASE,
+)
 
 SECTION_PATTERNS = {
     "scope": r"^#{1,3}\s*scope\b",
@@ -126,6 +174,46 @@ SECTION_PATTERNS = {
     "rollback_and_recovery": r"(rollback and recovery|rollback\b)",
     "pre_deploy_checklist": r"(pre-?deploy|checklist)",
 }
+
+
+def _has_approval_gate(text: str) -> bool:
+    """True when the text asks a human to accept risk or to schedule the step.
+
+    Negation is decided per clause, not by a look-back window. The earlier implementation allowed at
+    most 24 characters between the negative word and the phrase, so `"Do not approve before the
+    backfill completes"` and `"does not have to accept the risk"` were scored as gates — the exact
+    failure the fix was meant to remove, just moved further away. Here each clause is examined as a
+    whole: if it contains an approval phrase and any negation token before that phrase, the clause is
+    read as *not* requiring approval.
+
+    A clause begins after sentence punctuation, a semicolon, a dash, or a coordinating conjunction, so
+    "no backfill is needed; require approval from the DBA" keeps both halves correct.
+    """
+    for clause in re.split(r"[.;!?\n]|\s(?:but|however|although|yet|while)\s|—|–", text):
+        lowered = clause.lower()
+        match = APPROVAL_RE.search(clause)
+        if not match:
+            continue
+        before = lowered[: match.start()]
+        # A negation anywhere before the phrase in the same clause, or a negative framing of the
+        # phrase itself ("no approval", "no need for ... approval").
+        if re.search(r"\b(?:no|not|never|without|none|nothing|n't)\b", before):
+            continue
+        if re.match(r"\s*(?:is\s+)?not\s+(?:required|needed|necessary)", lowered[match.end():]):
+            continue
+        return True
+    return False
+
+
+def _has_citation(text: str) -> bool:
+    """True only when the text cites a file *and a line*.
+
+    A bare filename is not evidence: `see migration.sql` proves the file was named, not that any part
+    of it was read. Iterations 1-2 scored as cited on that basis, which is why the old evidence number
+    was meaningless. `prices.yml` is a common false positive — it matches a filename pattern but there
+    is no line to open — so the line number is required.
+    """
+    return bool(PATH_LINE_RE.search(text))
 
 
 def _norm(text: str) -> str:
@@ -143,7 +231,14 @@ def parse_report(raw: str) -> Report:
     be scored as a miss. Two layouts are accepted:
 
     1. Canonical: `### F1 — BLOCKER — category`, severity in the heading.
-    2. Prose: `## Evidence` with `### 1. Title` subsections, severity in a `**Risk: LOW**` line.
+    2. Prose: a subsection (`### 1. Title` or `### 1 — Title`) whose body carries a `**Risk: LOW**`
+       line, or whose heading names a severity.
+
+    Prose subsections did not carry severity in iteration-1/2 by design: the model wrote
+    `### 1. Application still writes phone` under `## Evidence`. Treating a subsection *under a
+    Findings-like section* as a finding is fair — it is a distinct item with its own body. Treating
+    every subsection anywhere as a finding is not, and `## Evidence` subtopics were being parsed as
+    independent findings.
 
     Verdict tokens are normalised (`BLOCK` -> `BLOCKED`, `LGTM` -> `APPROVED`, ...), since the token
     spelling is not what the metric is meant to measure.
@@ -179,6 +274,23 @@ def parse_report(raw: str) -> Report:
     current: Finding | None = None
     current_level = 99
     heading_re = re.compile(r"^(#{1,6})\s*(.*)$")
+    # Which subsections count as findings depends on the layout the report chose:
+    #   * under a Findings/Evidence-like section, numbered subsections are findings;
+    #   * with no such section at all (a common layout: `## Verdict` then `## 1. ...`), numbered
+    #     `##` subsections are findings, because that is where the analysis lives.
+    # The second rule exists so recall can be measured on reports that ignored the contract. It does
+    # not help their format score, which is the metric for following the contract.
+    # The test is a HEADING match, not "the word appears anywhere": `## Summary of evidence relied on`
+    # is not a findings section, and treating it as one dropped the real findings.
+    in_findings = False
+    has_findings_section = bool(
+        re.search(
+            r"^#{1,3}\s*(?:findings?|risks?|evidence|analysis)\s*[:—-]?\s*$",
+            raw,
+            re.IGNORECASE | re.MULTILINE,
+        )
+    )
+    top_level_numbered = not has_findings_section
 
     def close() -> None:
         nonlocal current
@@ -192,23 +304,26 @@ def parse_report(raw: str) -> Report:
             findings.append(current)
             current = None
 
-    for line in lines:
+    for idx, line in enumerate(lines, start=1):
         hm = heading_re.match(line)
         if hm:
             level = len(hm.group(1))
             title = hm.group(2)
+            if level == 2:
+                in_findings = bool(re.search(r"\b(findings?|risks?|evidences?|analysis)\b", title, re.IGNORECASE))
             sev = None
             for s in SEVERITIES:
                 if re.search(rf"\b{s}\b", title, re.IGNORECASE):
                     sev = s
                     break
-            # Canonical finding heading, or a numbered subsection under an Evidence-like section.
-            looks_canonical = sev is not None and re.search(r"\bF\d+\b|\[|—|:", title)
-            looks_numbered = bool(re.match(r"^\d+[.)]\s+\S", title))
-            if (looks_canonical or looks_numbered) and level >= 2:
+            # Canonical finding heading (F<n> + severity), or a prose subsection where analysis lives.
+            looks_canonical = sev is not None and re.search(r"\bF\d+\b|\[|—|–", title)
+            numbered = bool(re.match(r"^\d+[.)]\s+\S", title))
+            looks_prose = numbered and level >= 2 and (in_findings or (top_level_numbered and level == 2))
+            if (looks_canonical or looks_prose) and level >= 2:
                 if current is not None:
                     close()
-                current = Finding(severity=sev, title=title, body="")
+                current = Finding(severity=sev, title=title, body="", lineno=idx)
                 current_level = level
                 continue
             if current is not None and level <= current_level:
@@ -233,56 +348,102 @@ def parse_report(raw: str) -> Report:
         findings=findings,
         sections=sections,
         raw=raw,
-        has_approval_gate=bool(APPROVAL_RE.search(raw)),
+        has_approval_gate=_has_approval_gate(raw),
     )
 
 
-def _finding_matches(expected: dict, report: Report) -> Finding | None:
+def is_irreversible(expected: dict) -> bool:
+    """Does this expected finding describe a step that loses data irreversibly?
+
+    Two spellings exist in the fixtures: `reversible: false` and `approval: accept-risk`. Both are
+    accepted so a fixture that states the approval class without the reversibility flag still counts.
+    See `skills/migration-guard/references/change-impact-taxonomy.md` §2.4.
+    """
+    return expected.get("reversible") is False or expected.get("approval") == "accept-risk"
+
+
+def _finding_matches(expected: dict, report: Report, used: set[int] | None = None) -> Finding | None:
     """Find the reported finding that corresponds to an expected finding.
 
     Match rule: same severity, and either the category matches or at least one
     must_mention_any phrase appears in the finding text. Severity match is required
     because a downgraded severity is a substantive miss, not a wording difference.
+
+    `used` holds ids of findings already matched to another expectation. A case may legitimately have
+    two findings with the same severity and category (PG-006 and MY-006 both do), so without this the
+    evaluator returned the same report finding for both and credited its evidence twice while the
+    second expectation was marked as missing evidence. First match wins, in document order.
     """
     mentions = [_norm(m) for m in expected.get("must_mention_any", [])]
+    used = used if used is not None else set()
 
-    def concept_match(f: Finding) -> bool:
-        if f.category == expected["category"]:
-            return True
+    def phrase_match(f: Finding) -> bool:
         text = _norm(f.text)
         return bool(mentions) and any(m and m in text for m in mentions)
 
-    # Pass 1: same severity AND same concept. The strongest, intended match.
-    for f in report.findings:
-        if f.severity == expected["severity"] and concept_match(f):
-            return f
+    def take(f: Finding) -> Finding:
+        used.add(id(f))
+        return f
 
-    # Pass 2: the report never attributed a severity to any finding. Credit the concept so recall
+    # Pass 1: same severity AND same category. A category hit is stronger evidence of identity than a
+    # phrase hit, so it must be tried before phrases; otherwise a generic phrase like "lock" lets an
+    # application-compatibility expectation swallow a lock-and-rewrite finding (PG-002).
+    for f in report.findings:
+        if id(f) not in used and f.severity == expected["severity"] and f.category == expected["category"]:
+            return take(f)
+
+    # Pass 2: same severity AND a distinctive phrase. Phrases are the fallback for a report that used a
+    # different category word for the same risk.
+    for f in report.findings:
+        if id(f) not in used and f.severity == expected["severity"] and phrase_match(f):
+            return take(f)
+
+    # Pass 3: the report never attributed a severity to any finding. Credit the concept so recall
     # measures "did it identify this risk", and let format_compliance measure the missing severity.
     # A report that DOES use severities but picks the wrong one is deliberately not rescued here.
     if not any(f.explicit_severity for f in report.findings):
         for f in report.findings:
-            if concept_match(f):
-                return f
+            if id(f) not in used and (f.category == expected["category"] or phrase_match(f)):
+                return take(f)
     return None
 
 
-def _evidence_present(expected: dict, report: Report, case_dir: Path | None = None) -> bool:
-    """Did the report cite the evidence this finding requires?
+def _concept_only_matches(expected: dict, report: Report) -> list[Finding]:
+    """Findings that discuss the expected concept but at the wrong severity or category.
 
-    `must_cite_evidence` names a case file, but a good report cites the *paths documented inside* that
-    file (`app/controllers/users_controller.rb:31`), not the fixture filename. Either satisfies the
-    requirement: the report must show it read the evidence, and quoting the real path is the stronger
-    form.
+    Used only for diagnostics. A concept with the wrong severity is a miss — severity is part of the
+    claim — but "reported as MEDIUM instead of HIGH" and "never mentioned" are different defects and
+    the result log must be able to tell them apart.
     """
-    raw_lower = report.raw.lower()
+    mentions = [_norm(m) for m in expected.get("must_mention_any", [])]
+    hits = []
+    for f in report.findings:
+        text = _norm(f.text)
+        if f.category == expected["category"] or (mentions and any(m and m in text for m in mentions)):
+            hits.append(f)
+    return hits
+
+
+def _evidence_present(expected: dict, finding: Finding, case_dir: Path | None = None) -> tuple[bool, str]:
+    """Did *this finding* cite the evidence the expectation requires?
+
+    `must_cite_evidence` names a case file. The contract asks the report to cite the path the evidence
+    lives at (`app/controllers/users_controller.rb:31`), which is the stronger form — the fixture
+    filename alone only proves the file was named, not that it was read. Both are accepted, but the
+    search is scoped to the finding body: an unrelated citation elsewhere in the report is not
+    evidence for this finding.
+
+    Returns (satisfied, reason) so a miss says what was looked for.
+    """
     paths = expected.get("must_cite_evidence", [])
     if not paths:
-        return True
+        return True, ""
+    body = finding.text
+    missing: list[str] = []
 
     def satisfied(entry: str) -> bool:
         name = entry.split(":")[0].lower()
-        if name in raw_lower:
+        if name in body.lower() and _has_citation(body):
             return True
         if case_dir is None:
             return False
@@ -290,10 +451,16 @@ def _evidence_present(expected: dict, report: Report, case_dir: Path | None = No
         if not source.is_file():
             return False
         # Collect `some/path.ext` references documented inside the fixture file.
-        referenced = re.findall(r"[A-Za-z0-9_./-]+\.(?:rb|py|php|ts|js|sql|md|yml|yaml|json)\b", source.read_text(encoding="utf-8"))
-        return any(ref.lower() in raw_lower for ref in referenced if ref.lower() != name)
+        referenced = re.findall(
+            r"[A-Za-z0-9_./-]+\.(?:rb|py|php|ts|tsx|js|jsx|go|java|kt|cs|sql|md|yml|yaml|json|rake|sh)\b",
+            source.read_text(encoding="utf-8"),
+        )
+        return any(ref.lower() in body.lower() for ref in referenced if ref.lower() != name)
 
-    return all(satisfied(p) for p in paths)
+    for p in paths:
+        if not satisfied(p):
+            missing.append(p)
+    return (not missing), ("" if not missing else "missing evidence for " + ", ".join(missing))
 
 
 @dataclass
@@ -311,6 +478,8 @@ class CaseScore:
     false_positives: int = 0
     reported_findings: int = 0
     approval_misses: int = 0
+    destructive_total: int = 0
+    destructive_ok_count: int = 0
     destructive_ok: bool | None = None
     format_ok: bool = False
     format_notes: list[str] = field(default_factory=list)
@@ -318,7 +487,16 @@ class CaseScore:
     notes: list[str] = field(default_factory=list)
 
 
-REQUIRED_HEADINGS = ("Scope", "Verdict", "Findings")
+# The six sections SKILL.md names, in order. Kept in sync with scripts/linter_report.py, which is the
+# authoritative checker for one report.
+REQUIRED_HEADINGS = (
+    "Scope",
+    "Verdict",
+    "Findings",
+    "Safer migration path",
+    "Rollback and recovery",
+    "Pre-deploy checklist",
+)
 
 
 def check_format(report: Report) -> tuple[bool, list[str]]:
@@ -326,11 +504,30 @@ def check_format(report: Report) -> tuple[bool, list[str]]:
 
     A correct analysis in the wrong structure must score well on recall and badly here, so the two
     properties stay separable in the results.
+
+    The contract is the six headings in SKILL.md, checked positively and negatively: a missing
+    heading and an invented heading (a `## Summary` section) are both deviations, because a parser
+    keyed on the six names cannot tell them apart from the absence of a section.
     """
     problems: list[str] = []
+    headings = re.findall(r"^##\s+(.+?)\s*$", report.raw, re.MULTILINE)
+    normalised = [h.strip() for h in headings]
+    lowered = [h.lower() for h in normalised]
+
     for heading in REQUIRED_HEADINGS:
-        if not re.search(rf"^#{{1,3}}\s*{heading}\b", report.raw, re.IGNORECASE | re.MULTILINE):
+        if heading.lower() not in lowered:
             problems.append(f"missing '## {heading}' heading")
+    for h in normalised:
+        if h.lower() not in [x.lower() for x in REQUIRED_HEADINGS]:
+            problems.append(f"unexpected section '## {h}'")
+    present_order = [h for h in lowered if h in [x.lower() for x in REQUIRED_HEADINGS]]
+    contract_order = [h.lower() for h in REQUIRED_HEADINGS]
+    # Only compare the headings that are present: a missing heading is already reported above, and
+    # comparing a filtered list with a filtered list of itself is always equal, so the old check
+    # could never fail on order and could never pass either (it compared the wrong pair).
+    if present_order != [h for h in contract_order if h in present_order]:
+        problems.append(f"sections out of contract order: {' > '.join(present_order)}")
+
     if report.verdict is None:
         problems.append("no parseable verdict")
     if not report.findings:
@@ -341,7 +538,38 @@ def check_format(report: Report) -> tuple[bool, list[str]]:
             problems.append("no finding carries an explicit severity")
         if not any(f.category for f in report.findings):
             problems.append("no finding carries a known category")
+        # A finding heading that does not carry severity+category cannot be parsed deterministically.
+        loose = [f for f in report.findings if not f.explicit_severity or not f.category]
+        if loose:
+            problems.append(f"{len(loose)} finding heading(s) lack an explicit severity or category")
     return (not problems), problems
+
+
+def _approval_ok(expected_class: str | None, report: Report, finding_text: str, is_irreversible: bool) -> tuple[bool, str]:
+    """Did the report state the approval class this finding requires?
+
+    Scored against the finding when the finding carries an approval statement, otherwise against the
+    report (older reports discuss approval in prose outside the finding). A miss says which check
+    failed, so the number can be audited rather than trusted.
+    """
+    if expected_class is None:
+        return True, ""
+    scope = finding_text if re.search(r"\*\*\s*approval\b", finding_text, re.IGNORECASE) else report.raw
+    gate = _has_approval_gate(scope)
+    if expected_class == "accept-risk":
+        if not gate:
+            return False, "expected an 'accept-risk' approval gate"
+        if is_irreversible and not RECOVERY_RE.search(scope):
+            return False, "accept-risk stated without a recovery/backup plan"
+        return True, ""
+    if expected_class == "schedule":
+        if not SCHEDULE_RE.search(scope):
+            return False, "expected a schedule/window/backfill statement"
+        return True, ""
+    # none: the report must NOT ask for a gate. Saying "no approval needed" is correct, not a gate.
+    if gate:
+        return False, "expected 'no approval needed' but a gate was stated"
+    return True, ""
 
 
 def score_case(expected: dict, report: Report, case_dir: Path | None = None) -> CaseScore:
@@ -354,36 +582,61 @@ def score_case(expected: dict, report: Report, case_dir: Path | None = None) -> 
     cs.reported_findings = len([f for f in report.findings if f.severity != "INFO"])
     cs.format_ok, cs.format_notes = check_format(report)
 
+    # Findings already matched to another expectation in this case. Two expectations can share a
+    # severity and category, so a report finding must be claimed once.
+    used_findings: set[int] = set()
+
+    # The destructive-policy denominator comes from the FIXTURE, not from what the report chose to
+    # report. Deriving it from matched findings let a report raise its score by deleting the finding
+    # whose gate it got wrong: on PG-001, "F2 present with Approval: none" scored 1/2 (fail) while the
+    # same report with F2 deleted scored 1/1 (pass). A miss must count as a miss.
+    irreversible_expected = {
+        exp["id"]
+        for exp in expected.get("required_findings", [])
+        if is_irreversible(exp)
+    }
+    cs.destructive_total = len(irreversible_expected)
+
     for exp in expected.get("required_findings", []):
         cs.required_total += 1
         is_critical = bool(exp.get("critical"))
         if is_critical:
             cs.critical_total += 1
         cs.evidence_total += 1
-        match = _finding_matches(exp, report)
+        match = _finding_matches(exp, report, used_findings)
         if match is None:
             cs.missing.append(f"{exp['id']} {exp['severity']} {exp['category']}")
+            # Name the near miss, so a severity/category mismatch is not mistaken for "never saw it".
+            concept = _concept_only_matches(exp, report)
+            if concept:
+                cs.notes.append(
+                    f"{exp['id']}: concept found but severity/category wrong "
+                    f"(reported {concept[0].severity}, expected {exp['severity']}; "
+                    f"category {concept[0].category or 'unknown'}, expected {exp['category']})"
+                )
             continue
         cs.required_found += 1
         if is_critical:
             cs.critical_found += 1
-        if _evidence_present(exp, report, case_dir):
+        ok, why = _evidence_present(exp, match, case_dir)
+        if ok:
             cs.evidence_ok += 1
         else:
-            cs.notes.append(f"{exp['id']}: missing evidence for {exp.get('must_cite_evidence')}")
-        if exp.get("requires_human_approval") and not report.has_approval_gate:
+            cs.notes.append(f"{exp['id']}: {why}")
+
+        if exp.get("requires_human_approval") and not _has_approval_gate(report.raw):
             cs.notes.append(f"{exp['id']}: approval gate not stated")
-        # Approval class is scored by what the report actually says, not by wording alone.
-        cls = exp.get("approval")
-        if cls == "accept-risk" and not APPROVAL_RE.search(report.raw):
+
+        irreversible = is_irreversible(exp)
+        ok, why = _approval_ok(exp.get("approval"), report, match.text, irreversible)
+        if not ok:
             cs.approval_misses += 1
-            cs.notes.append(f"{exp['id']}: expected an 'accept-risk' approval gate")
-        elif cls == "schedule" and not (SCHEDULE_RE.search(report.raw) or APPROVAL_RE.search(report.raw)):
-            cs.approval_misses += 1
-            cs.notes.append(f"{exp['id']}: expected a scheduling/window statement")
-        elif cls == "none" and APPROVAL_RE.search(report.raw):
-            cs.approval_misses += 1
-            cs.notes.append(f"{exp['id']}: expected 'no approval needed' but a gate was stated")
+            cs.notes.append(f"{exp['id']}: {why}")
+        if irreversible and ok:
+            # The denominator was already set from the fixture above, so a finding that was never
+            # reported simply contributes nothing to the numerator and the case fails.
+            if _has_approval_gate(match.text if re.search(r"\*\*\s*approval\b", match.text, re.I) else report.raw):
+                cs.destructive_ok_count += 1
 
     for forb in expected.get("forbidden_findings", []):
         cat = forb["category"]
@@ -399,9 +652,15 @@ def score_case(expected: dict, report: Report, case_dir: Path | None = None) -> 
                     continue
                 cs.false_positives += 1
 
-    irreversible = expected.get("irreversible", expected.get("destructive"))
-    if irreversible:
-        cs.destructive_ok = report.has_approval_gate
+    irreversible_case = expected.get("irreversible", expected.get("destructive"))
+    if irreversible_case:
+        # A case passes only when every irreversible finding carries its gate. The denominator is the
+        # fixture's count of irreversible findings, so an unreported one is a guaranteed miss; the
+        # report cannot improve its ratio by staying quiet.
+        cs.destructive_ok = (
+            cs.destructive_total > 0
+            and cs.destructive_ok_count == cs.destructive_total
+        )
 
     return cs
 
@@ -479,12 +738,31 @@ def load_cases(tests_dir: Path) -> dict[str, dict]:
     return cases
 
 
+def _safe_console() -> None:
+    """Never crash on a model's Unicode.
+
+    Reports routinely contain emoji and typographic dashes. On a Windows console with a legacy code
+    page, printing one raises `UnicodeEncodeError` and the whole scorecard is lost — the scoring
+    itself was fine, only the summary crashed. Reconfigure stdout/stderr to UTF-8 with replacement so a
+    character that cannot be shown prints as `?` instead of killing the run.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[union-attr]
+        except (AttributeError, ValueError):
+            pass
+
+
 def main(argv: list[str] | None = None) -> int:
+    _safe_console()
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--reports", required=True, type=Path, help="Directory containing one subdirectory per case ID")
     ap.add_argument("--tests", type=Path, default=Path("tests/migration-guard"))
     ap.add_argument("--json", type=Path, help="Write the full scorecard to this path")
     ap.add_argument("--report-only", action="store_true", help="Exit 0 even when targets are missed")
+    ap.add_argument("--compare", type=Path, action="append", metavar="SCORECARD",
+                    help="Compare against a previously written scorecard JSON (repeatable)")
+    ap.add_argument("--quiet-cases", action="store_true", help="Print only the metric table, not per-run rows")
     args = ap.parse_args(argv)
 
     cases = load_cases(args.tests)
@@ -495,15 +773,18 @@ def main(argv: list[str] | None = None) -> int:
     scores: list[CaseScore] = []
     missing_runs: list[str] = []
     for case_id, expected in cases.items():
-        case_dir = args.reports / case_id
-        report_paths = find_reports(case_dir) if case_dir.is_dir() else []
+        case_dir = args.tests / "cases"
+        case_dir = next((p.parent for p in case_dir.glob(f"*/{case_id}")), None) or (args.tests / "cases" / case_id)
+        report_root = args.reports / case_id
+        report_paths = find_reports(report_root) if report_root.is_dir() else []
         if not report_paths:
             missing_runs.append(case_id)
             continue
         for report_path in report_paths:
-            report = parse_report(report_path.read_text(encoding="utf-8"))
-            score = score_case(expected, report)
-            # Distinguish runs of the same case in the printed table.
+            report = parse_report(report_path.read_text(encoding="utf-8", errors="replace"))
+            # case_dir was never passed before v0.2, so evidence inside a fixture file could not be
+            # resolved. Passing it is what makes `must_cite_evidence` checkable at all.
+            score = score_case(expected, report, case_dir)
             if len(report_paths) > 1:
                 score.case_id = f"{case_id}/{report_path.parent.name}"
             scores.append(score)
@@ -515,16 +796,17 @@ def main(argv: list[str] | None = None) -> int:
     if missing_runs:
         print("Missing reports: " + ", ".join(missing_runs))
     print()
-    for s in scores:
-        flag = "ok " if s.verdict_ok else "BAD"
-        print(f"[{flag}] {s.case_id:<8} verdict={s.verdict!s:<12} "
-              f"found={s.required_found}/{s.required_total} critical={s.critical_found}/{s.critical_total} "
-              f"evidence={s.evidence_ok}/{s.evidence_total} fp={s.false_positives}")
-        for m in s.missing:
-            print(f"        MISSED: {m}")
-        for n in s.notes:
-            print(f"        NOTE:   {n}")
-    print()
+    if not args.quiet_cases:
+        for s in scores:
+            flag = "ok " if s.verdict_ok else "BAD"
+            print(f"[{flag}] {s.case_id:<18} verdict={str(s.verdict):<12} fmt={'y' if s.format_ok else 'n'} "
+                  f"found={s.required_found}/{s.required_total} critical={s.critical_found}/{s.critical_total} "
+                  f"evidence={s.evidence_ok}/{s.evidence_total} ap_miss={s.approval_misses} fp={s.false_positives}")
+            for m in s.missing:
+                print(f"        MISSED: {m}")
+            for n in s.notes:
+                print(f"        NOTE:   {n}")
+        print()
     for k, v in metrics.items():
         print(f"{k:<32} {v}")
     print()
@@ -535,6 +817,33 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print("All metrics meet their targets.")
 
+    if args.compare:
+        print()
+        print("Comparison (value, then delta against each scorecard):")
+        previous = []
+        for path in args.compare:
+            try:
+                previous.append((path, json.loads(path.read_text(encoding="utf-8")).get("metrics", {})))
+            except (OSError, json.JSONDecodeError) as exc:
+                print(f"  ! cannot read {path}: {exc}")
+        header = f"  {'metric':<32} {'now':>8}" + "".join(f" {p.name[:18]:>20}" for p, _ in previous)
+        print(header)
+        for name in TARGETS:
+            now = metrics.get(name)
+            cells = []
+            for _, prev in previous:
+                before = prev.get(name)
+                if now is None or before is None:
+                    cells.append(f"{'—':>20}")
+                else:
+                    better = (now <= before) if name == "false_positive_rate" else (now >= before)
+                    arrow = "up" if now > before else ("down" if now < before else "same")
+                    mark = "better" if better and now != before else ("worse" if not better and now != before else "")
+                    cells.append(f"{arrow:>5} {now - before:+.4f} {mark:>6}")
+            print(f"  {name:<32} {now if now is not None else '—'!s:>8}" + "".join(cells))
+        print("  (target: " + ", ".join(f"{k}<={v}" if k == "false_positive_rate" else f"{k}>={v}"
+                                        for k, v in TARGETS.items()) + ")")
+
     if args.json:
         args.json.parent.mkdir(parents=True, exist_ok=True)
         payload = {
@@ -542,6 +851,7 @@ def main(argv: list[str] | None = None) -> int:
             "targets_met": ok,
             "problems": problems,
             "missing_runs": missing_runs,
+            "scorer_version": "0.2",
             "cases": [s.__dict__ for s in scores],
         }
         args.json.write_text(json.dumps(payload, indent=2), encoding="utf-8")

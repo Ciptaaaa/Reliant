@@ -68,21 +68,81 @@ Produce the Migration Guard report for `migration.sql`, following the skill's re
 Quote the evidence you rely on and state the verdict."""
 
 
-def load_skill_context(root: Path) -> str:
-    """Build the system prompt as an agent would see it.
+def load_report_template(root: Path) -> str:
+    """The contract, verbatim, for the API runner.
 
-    References come first as background, then SKILL.md last. SKILL.md is the *instruction* document;
-    putting 60K of reference material after it buries the report contract and measurably degrades
-    format adherence. A real session loads SKILL.md on activation and pulls references afterwards, so
-    instructions-last is the closer approximation, not a relaxation of the test.
+    In a real Agent Skills session the agent reads `report-template.md` with a file tool. This runner
+    has no tools, so the file must be in the prompt. Leaving it out was the difference between "the
+    contract exists" and "the model can see the contract": the pilot run still produced 0% format
+    compliance because the instruction said "open report-template.md" and no such file was reachable.
+    """
+    path = root / "skills" / "migration-guard" / "report-template.md"
+    return path.read_text(encoding="utf-8")
+
+
+def contract_banner(template: str) -> str:
+    """A short, unmissable restatement placed first and last in the system prompt.
+
+    Position matters as much as content: a 70K prompt buries a rule stated once in the middle. The
+    contract is therefore repeated before the references and again after SKILL.md.
+    """
+    headings = (
+        "# Migration Guard Report\n"
+        "## Scope\n"
+        "## Verdict\n"
+        "## Findings\n"
+        "## Safer migration path\n"
+        "## Rollback and recovery\n"
+        "## Pre-deploy checklist"
+    )
+    return (
+        "OUTPUT CONTRACT — read this first and follow it exactly.\n"
+        "Your reply is a Markdown report with exactly these seven lines-as-headings, in this order,\n"
+        "and no other `##` heading:\n\n"
+        f"```text\n{headings}\n```\n\n"
+        "Each finding under `## Findings` is `### F<n> — SEVERITY — category` followed by the seven\n"
+        "fields `**Statement**`, `**Evidence**` (one bullet per `path:line` citation), `**Impact**`,\n"
+        "`**Mitigation**`, `**Verification**`, `**Approval**` (none | schedule | accept-risk),\n"
+        "`**Reversible**` (yes | no). The verdict is `**BLOCKED**` / `**CONDITIONAL**` /\n"
+        "`**APPROVED**` on the first line of `## Verdict`.\n\n"
+        "Do not write `## Evidence`, `## Summary`, `## Notes`, `## Conclusion`, `## Blast radius`, or a\n"
+        "numbered `## 1. ...` analysis. That content belongs inside a finding.\n\n"
+        f"The full template follows; `\n{'-' * 70}` marks its start.\n"
+        f"{'-' * 70}\n{template}\n{'-' * 70}\n\n"
+    )
+
+
+def load_skill_context(root: Path) -> str:
+    """Build the system prompt for the API runner.
+
+    Order, and why:
+      1. The output contract (short form + the full template), first.
+      2. The references, as background.
+      3. SKILL.md, the instruction document.
+      4. The output contract again, last.
+
+    Iterations 1-2 put the contract only inside SKILL.md, in the middle of a ~70K prompt, and every
+    one of 60 runs restyled the report. Recency and primacy both matter for long prompts, so the
+    contract is stated at both ends and the full template is included — this runner has no tools, so
+    "open report-template.md" is not an instruction the model can obey.
     """
     skill_dir = root / "skills" / "migration-guard"
-    parts: list[str] = []
+    banner = contract_banner(load_report_template(root))
+    parts: list[str] = [banner]
     for name in REFERENCE_ORDER:
         path = skill_dir / "references" / name
         parts.append(f"--- references/{name} (background) ---\n\n{path.read_text(encoding='utf-8')}\n\n")
     parts.append("--- SKILL.md (the instructions you must follow) ---\n\n")
     parts.append(skill_dir.joinpath("SKILL.md").read_text(encoding="utf-8"))
+    parts.append(
+        "\n\n--- FINAL REMINDER: the output contract ---\n\n"
+        "Reply with exactly: `# Migration Guard Report`, then `## Scope`, `## Verdict`, `## Findings`,\n"
+        "`## Safer migration path`, `## Rollback and recovery`, `## Pre-deploy checklist`. No other\n"
+        "`##` heading. Every finding is `### F<n> — SEVERITY — category` with `**Statement**`,\n"
+        "`**Evidence**`, `**Impact**`, `**Mitigation**`, `**Verification**`, `**Approval**`,\n"
+        "`**Reversible**`. The verdict is `**BLOCKED**`, `**CONDITIONAL**` or `**APPROVED**` on the\n"
+        "first line of `## Verdict`. A summary section is not part of the contract.\n"
+    )
     return "".join(parts)
 
 
