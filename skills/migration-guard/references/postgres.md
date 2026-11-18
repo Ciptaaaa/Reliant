@@ -1,8 +1,21 @@
 # PostgreSQL Migration Safety
 
-Load this file when the migration targets PostgreSQL and you need to decide lock level, rewrite
-cost, or concurrency safety. Every claim here was checked against the PostgreSQL documentation;
-version qualifiers are stated where behavior changed.
+Load this file when the migration targets PostgreSQL and you need to decide lock level, rewrite cost,
+or concurrency safety. Every claim here was checked against the PostgreSQL documentation; version
+qualifiers are stated where behavior changed.
+
+**Supported floor: PostgreSQL 11.** Most statements in this file are unchanged since then. On a version
+older than 11, these specific claims do not hold and must be reported as unknown rather than assumed:
+
+- `ADD COLUMN` with a non-volatile default is a rewrite on PostgreSQL 10 and older.
+- `REINDEX … CONCURRENTLY` requires 12+. Before that, only the two-step "create new index
+  concurrently, drop old index concurrently, rename" sequence works.
+- `ADD CONSTRAINT … NOT NULL … NOT VALID` requires 18. Use the `CHECK NOT VALID` path on anything
+  older.
+
+Everything else (lock levels, `CONCURRENTLY`, `NOT VALID`/`VALIDATE`, rewrite rules) applies from 11
+onward. If the version is unknown, do not claim the 11+ fast paths and cap the verdict at
+`CONDITIONAL`.
 
 Primary sources:
 

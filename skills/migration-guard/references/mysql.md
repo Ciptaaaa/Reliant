@@ -1,8 +1,14 @@
 # MySQL Migration Safety
 
-Load this file when the migration targets MySQL or MariaDB-family InnoDB tables and you need to
-decide the algorithm, lock level, or transactional behaviour. MySQL's online DDL support is **highly
-version- and operation-specific**. Never generalise "it is online" across operations.
+Load this file when the migration targets **Oracle MySQL**. It does not cover MariaDB.
+
+> **Scope warning.** This file describes Oracle MySQL 8.0 (and notes the MySQL 5.7 differences that
+> matter). MariaDB is a fork with different online-DDL support, different system tables, and different
+> defaults. Do not apply these rules to MariaDB. If the engine is MariaDB, say the analysis is out of
+> scope and cap the verdict at `CONDITIONAL`.
+
+MySQL's online DDL support is **highly version- and operation-specific**. Never generalise "it is
+online" across operations.
 
 Primary sources (MySQL 8.0 Reference Manual, retrieved 2026-11-17):
 
@@ -174,6 +180,27 @@ behaviour of existing delete paths; enumerate the application's delete code befo
 
 If the target version is unknown, the report must not claim an INSTANT path and must cap the verdict at
 `CONDITIONAL` — the same operation is a rebuild on 5.7 and metadata-only on 8.0.29.
+
+### MariaDB is out of scope
+
+Everything above is sourced from the Oracle MySQL manual. MariaDB diverges in ways that matter here:
+
+| Area | Oracle MySQL | MariaDB |
+|---|---|---|
+| Metadata lock inspection | `performance_schema.metadata_locks` | `information_schema.metadata_lock_info` |
+| `ALGORITHM=INSTANT` | 8.0.12+ | Not available under that name; MariaDB uses `ALGORITHM=INSTANT` from 10.3 but with a smaller operation set |
+| Atomic DDL | 8.0+ | No equivalent |
+| `RENAME COLUMN` | 8.0.28+ | 10.5.2+ |
+| Default collation | `utf8mb4_0900_ai_ci` | `utf8mb4_general_ci` |
+| Version detection | `SELECT @@version` | `SELECT VERSION()` contains `MariaDB` |
+
+The table is here to explain **why** the rules do not transfer, not to license applying them. Reliant
+does not cover MariaDB in Phase 1.
+
+**Detection:** `SELECT VERSION()` returns a string containing `MariaDB` on MariaDB. If the engine cannot
+be identified as Oracle MySQL, the report must say so, must not claim INSTANT or a specific lock level,
+and must cap the verdict at `CONDITIONAL`. Telling the user "if this is MariaDB, these findings do not
+apply" is the correct outcome, not a failure.
 
 ## 9. Gotchas
 

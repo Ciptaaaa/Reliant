@@ -59,33 +59,111 @@ does not break readers, so it is much easier to make safe.
 ## 3. Batched backfill
 
 Never write an unbatched `UPDATE` that touches a large fraction of a table. It holds row locks for
-the whole duration, bloats the table, generates a huge WAL/binlog, and can lock the table for readers
-on MySQL.
+the whole duration, bloats the table, generates a huge WAL/binlog, and on MySQL blocks writes for the
+whole statement.
 
-Pattern:
+Two rules that make every backfill safe to stop and re-run:
+
+- **Commit per batch.** One transaction per batch, never one transaction for the whole job. A single
+  long transaction makes the lock cost identical to the unbatched version, and on PostgreSQL it holds
+  back vacuum for its entire duration.
+- **Idempotent predicate.** The `WHERE` clause must select only rows that still need work, so a run
+  interrupted at batch 700 resumes at batch 701 without double-applying anything.
+
+The SQL differs between engines and there is no portable form. Do not give one engine's syntax as a
+generic pattern.
+
+### PostgreSQL
+
+PostgreSQL can run the loop inside one session without a client loop. `DO` is a block; each `UPDATE` is
+its own statement and commits on its own because `DO` does not open a transaction by default.
 
 ```sql
--- Repeat until 0 rows affected. Each batch commits.
-UPDATE orders
-   SET status = 'pending'
- WHERE status IS NULL
-   AND id IN (
-     SELECT id FROM orders WHERE status IS NULL ORDER BY id LIMIT 1000
-   );
+DO $$
+DECLARE
+  batch_size int := 1000;
+  affected   int;
+BEGIN
+  LOOP
+    UPDATE orders o
+       SET status = 'pending'
+     WHERE o.status IS NULL
+       AND o.id IN (
+         SELECT id FROM orders WHERE status IS NULL ORDER BY id LIMIT batch_size
+       );
+    GET DIAGNOSTICS affected = ROW_COUNT;
+    EXIT WHEN affected = 0;
+    COMMIT;              -- no-op inside DO; kept for clarity if run from a client loop
+    PERFORM pg_sleep(0.2);
+  END LOOP;
+END;
+$$;
 ```
 
-Rules the report must state:
+Two notes that change the answer in real projects:
 
-- **Batch size** (start 1000–5000; smaller for wide rows or hot tables).
+- A `DO` block runs inside a **single implicit transaction** if the client sends it as one command with
+  explicit `BEGIN`. Run it with autocommit (psql default) so each statement-commit stands, or drive the
+  loop from the client instead.
+- For a very large table, prefer a client loop over `\gexec`, which gives you a commit point, a pause,
+  and an abort condition on every iteration:
+
+```sql
+-- psql, repeating until 0 rows
+SELECT format(
+  'UPDATE orders SET status = %L WHERE id IN (SELECT id FROM orders WHERE status IS NULL ORDER BY id LIMIT 1000);',
+  'pending'
+)
+WHERE EXISTS (SELECT 1 FROM orders WHERE status IS NULL) \gexec
+```
+
+### MySQL
+
+MySQL has no anonymous block and writing to a table while selecting from it in the same statement can
+fail with `ERROR 1093 (You can't specify target table for update in FROM clause)`. Do **not** ship the
+`UPDATE ... WHERE id IN (SELECT ... FROM same_table ... LIMIT)` form: on many versions it is rejected
+or the `LIMIT` is not accepted inside an `IN` subquery.
+
+Select the batch ids first, then update by explicit id list. Each statement autocommits, which is what
+you want per batch.
+
+```sql
+-- 1. Fetch the next batch (commit already happened; this is a plain read).
+SELECT id FROM orders WHERE status IS NULL ORDER BY id LIMIT 1000;
+
+-- 2. Update exactly those ids. Repeat with the next batch's ids.
+UPDATE orders SET status = 'pending'
+ WHERE status IS NULL
+   AND id IN (/* the ids returned by step 1 */);
+```
+
+Drive steps 1 and 2 from the client until the read returns no rows. A stored procedure does this too,
+but it hides the commit points from the reviewer; a client loop is easier to audit and to interrupt.
+
+### Stop conditions (both engines)
+
+A backfill without an abort condition is an outage waiting for a slow replica. The report must state:
+
+| Condition | Action |
+|---|---|
+| Replication lag above a threshold (e.g. > 30 s or > 2× baseline) | Pause; resume when lag recovers |
+| Batch duration above a threshold (e.g. 2× the first batch) | Pause and investigate lock contention |
+| Error rate or failed batches above zero | Stop; do not retry blindly |
+| Rows updated outperform the projection | Stop; the predicate is probably wrong |
+| A human kill switch | Always available; the job must leave the table in a valid partial state |
+
+### Rules the report must state
+
+- **Batch size** (start 1000–5000; smaller for wide rows or hot tables), and why.
 - **Pause between batches** (100–500 ms) so replication and autovacuum keep up.
-- **Idempotent predicate**: the `WHERE ... IS NULL` makes re-running safe after a crash.
+- **Idempotent predicate**: re-running is safe after a crash.
 - **Progress metric**: a count query for remaining rows.
 - **Throttling by replication lag** if replicas exist; otherwise lag grows unbounded.
-- **Not inside one transaction.** A backfill in one transaction makes the lock effect identical to
-  the unbatched version.
+- **Not inside one transaction** for the whole job.
 
-**Never** treat "I will backfill the NULLs" as the mitigation. Specify it as the loop above, with
-its verification: `SELECT count(*) FROM t WHERE col IS NULL` must return 0 before `SET NOT NULL`.
+**Never** treat "I will backfill the NULLs" as the mitigation. Specify the loop, the commit point per
+batch, the abort conditions, and its verification: `SELECT count(*) FROM t WHERE col IS NULL` must
+return 0 before `SET NOT NULL`.
 
 ## 4. Dual read / dual write
 
@@ -155,7 +233,7 @@ All destructive steps go last, in their own migration, after a verification gate
 3. Verify (counts, reconciliation query, error logs).
 4. Deploy application that no longer references the old structure.
 5. Wait one full deploy cycle (or a callable retention window for external consumers).
-6. Drop the old structure, with backup + approval.
+6. Drop the old structure, with backup and an approval to accept risk.
 ```
 
 The report must state explicitly: the drop is safe **only because** steps 3–5 are complete. If any
