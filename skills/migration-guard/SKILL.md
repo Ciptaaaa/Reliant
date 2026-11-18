@@ -30,9 +30,11 @@ guess and do not stay silent about the gap.
 - Do not request production credentials, and do not suggest that the user paste production data.
 - Never produce an `APPROVED` verdict when any evidence needed for the riskiest finding is missing.
   Use `CONDITIONAL` with an explicit verification step instead.
-- Any destructive operation (`DROP`, data-destroying type change, truncation, mass `DELETE`/`UPDATE`)
-  requires a stated human approval gate and a recovery plan. If there is no recovery plan, the
-  finding is at least `BLOCKER`.
+- A finding may never be more severe than the evidence supports. Unverified data property → `HIGH`
+  with the check query, not `BLOCKER`. See [risk classification](references/risk-classification.md) §2.
+- Any data change needs whatever permission the host agent requires. On top of that, an
+  **approval to accept risk** is required only when the old value cannot be restored. Reversibility,
+  not the operation type, decides — see "Approvals" below.
 - Do not invent table sizes, row counts, lock durations, or database behavior. If the user did not
   provide them, list them under **Unknowns** and state how a missing value changes the risk.
 
@@ -44,7 +46,8 @@ step 5.
 - [ ] **Step 1 — Identify engine and version.** Find the engine (PostgreSQL or MySQL) and the version
       from config, Dockerfiles, CI, `package.json`, `requirements.txt`, `Gemfile`, or the user's
       message. Version changes the answer for many operations. If unknown, say so and record it in
-      **Unknowns** — it may cap the verdict at `CONDITIONAL`.
+      **Unknowns** — it may cap the verdict at `CONDITIONAL`. If the engine is MariaDB or anything
+      other than PostgreSQL/MySQL, say the analysis does not apply and stop at `CONDITIONAL`.
 - [ ] **Step 2 — Reconstruct the schema.** Read migrations, `schema.sql`, or an ORM model to learn
       the current definitions of every table the migration touches: columns, types, nullability,
       defaults, indexes, constraints, foreign keys, and approximate size if available.
@@ -120,9 +123,48 @@ Report the verdict as the single worst case:
    a `NOT NULL` backfill, old application version status unknown for a rename) → `CONDITIONAL`.
 3. Else `APPROVED`.
 
+## Approvals
+
+Separate two questions that are easy to merge:
+
+- **Approval to execute** — the host agent's own permission model decides this. The skill cannot grant
+  it and does not replace it. Every write, and every step that would touch a database, needs it.
+- **Approval to accept risk** — a human decision that data loss or irreversible change is acceptable.
+  Required only when the previous value **cannot be restored**.
+
+Reversibility decides the class, not the operation name. An `UPDATE` can be either class; a `DROP
+COLUMN` never makes it reversible.
+
+| Class | Test | Required |
+|---|---|---|
+| Reversible, additive | Old value was `NULL` or default; data is derived and recomputable; column/table added and nothing wrote to it | `none` — state that it is reversible and why |
+| Reversible but costly | Restorable with effort/schedule: large backfill, coordinated release, long lock | `schedule` — window, throttle, abort conditions |
+| Irreversible | Old value overwritten or deleted; structure removed with data; narrowing type change | `accept-risk` — plus recovery plan and restore point |
+
+If an irreversible step has no recovery plan, the finding is at least `BLOCKER`. A reversible step
+without a recovery plan is not.
+
 ## Report format
 
-Produce exactly this structure. Keep it compact; the evidence matters more than the prose.
+This format is **mandatory and machine-parsed**. Emit exactly these six headings, in this order, and
+nothing else. Do not add a Summary, Overview, Conclusion, or Notes section; put that content in the
+relevant finding. A tool matches your output against this contract, so a different structure is an
+unparseable report even when the analysis is correct.
+
+Rules that are easy to get wrong:
+
+1. The verdict word is exactly one of `BLOCKED`, `CONDITIONAL`, `APPROVED`. Write `BLOCKED`, not
+   `BLOCK`, `BLOCKING`, or `DO NOT MERGE`.
+2. Every finding heading begins with `### F<number> — <SEVERITY> — <category>`, using the literal
+   severity token and one category from the list below. Severity belongs in the heading, not in a
+   separate `**Risk:**` line.
+3. Quote the file path with a line number in **Evidence**. A finding without a path citation is an
+   Unknown, not a finding.
+
+Categories (use one per finding): `destructive-column-drop`, `destructive-table-drop`, `type-change`,
+`not-null-add`, `unique-constraint`, `foreign-key`, `index-build`, `lock-and-rewrite`, `backfill`,
+`rename`, `charset-collation`, `implicit-commit`, `application-compatibility`, `data-integrity`,
+`operational`, `no-risk-observed`.
 
 ````markdown
 # Migration Guard Report
@@ -135,23 +177,27 @@ Produce exactly this structure. Keep it compact; the evidence matters more than 
 - **Unknowns**: unknown version, row counts, deployment model, missing schema files
 
 ## Verdict
-**BLOCKED | CONDITIONAL | APPROVED** — one-sentence justification that names the decisive finding.
+**BLOCKED** — one-sentence justification that names the decisive finding.
 
 > APPROVED (when used): no blocker found for the inspected scope and evidence. This is not a
 > guarantee of production safety.
 
 ## Findings
 
-### F1 — [BLOCKER|HIGH|MEDIUM|LOW|INFO] short title
-- **Statement**: `<exact SQL or statement>` in `migration.sql:LINE`
+### F1 — BLOCKER — destructive-column-drop
+- **Statement**: `ALTER TABLE users DROP COLUMN phone` in `migration.sql:2`
 - **Why it is risky**: concrete consequence (data lost, query fails, table locked for N minutes)
 - **Evidence**:
-  - `path/to/file.ext:LINE` — short quote of what proves the claim
+  - `app/controllers/users_controller.rb:31` — `slice(:phone)` returns it in the API response
 - **Mitigation**: the safe alternative or precondition
 - **Verification**: how a human confirms the mitigation worked
-- **Approval required**: yes/no (yes for any destructive change or data backfill)
+- **Approval**: `none` | `schedule` | `accept-risk`
+- **Reversible**: yes | no
 
-(repeat per finding; include at least one INFO finding stating what was examined and found safe)
+### F2 — INFO — no-risk-observed
+- **Statement**: what you examined
+- **Evidence**: `path:LINE`
+- **Why it is safe**: the mechanism or schema fact
 
 ## Safer migration path
 Numbered, ordered steps for the recommended alternative (for example expand-and-contract), with the
@@ -164,7 +210,7 @@ engine-specific syntax the user needs.
   (call out separately when "rollback" would not restore data)
 
 ## Pre-deploy checklist
-- [ ] Human approval recorded for each destructive step
+- [ ] Human approval recorded for each `accept-risk` step
 - [ ] Backup or snapshot confirmed (type and scope)
 - [ ] Old application version status confirmed
 - [ ] Verification queries listed below are runnable

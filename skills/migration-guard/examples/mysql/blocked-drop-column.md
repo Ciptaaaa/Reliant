@@ -1,0 +1,113 @@
+# Example 2 — A `BLOCKED` report (MySQL, destructive drop)
+
+The same migration shape as `tests/migration-guard/cases/mysql/MY-001`, with the report written out in
+full. Read this when you need to see what the blocking evidence chain looks like end to end.
+
+## Input
+
+`schema.sql`
+
+```sql
+CREATE TABLE suppliers (
+  id            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name          VARCHAR(160) NOT NULL,
+  contact_phone VARCHAR(32)  DEFAULT NULL,
+  PRIMARY KEY (id),
+  KEY suppliers_contact_phone_idx (contact_phone)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+-- MySQL 8.0.36, ~4,800 rows
+```
+
+`migration.sql`
+
+```sql
+ALTER TABLE suppliers DROP COLUMN contact_phone;
+```
+
+`application-usage.md` (excerpt) — three references that read the column, one of them a nightly export
+job that runs from the last released image.
+
+## Report
+
+```markdown
+# Migration Guard Report
+
+## Scope
+- **Migration**: database/migrations/2026_11_16_drop_supplier_contact_phone.php
+- **Engine**: MySQL 8.0.36 (InnoDB)
+- **Inspected**: schema.sql, migration.sql, app/Models, app/Http, app/Services, resources/views,
+  database/seeders
+- **Not inspected**: the ERP system that consumes the nightly export; mobile clients
+- **Unknowns**: whether the ERP consumer can be changed before the drop; the deployment order relative
+  to the nightly export job
+
+## Verdict
+**BLOCKED** — the column is still read by the supplier form, the purchase order PDF, and the nightly
+ERP export.
+
+## Findings
+
+### F1 — BLOCKER — destructive-column-drop: column still used by application code
+- **Statement**: `ALTER TABLE suppliers DROP COLUMN contact_phone` in `migration.sql:2`
+- **Why it is risky**: after the drop, the supplier form fails validation on save, the purchase order PDF
+  raises `SQLSTATE[42S22] Column not found`, and the nightly ERP export stops until a new image is
+  released
+- **Evidence**:
+  - `application-usage.md:7` — `Supplier::$fillable` includes `contact_phone`
+  - `application-usage.md:18` — `app/Services/ErpExport.php:37` selects `contact_phone` and runs nightly
+    from the last released image
+  - `migration.sql:2` — the drop
+- **Mitigation**: stop reading and writing the column and migrate the ERP export to a replacement field
+  in an earlier release; drop in a separate migration after one full deploy cycle.
+- **Verification**: `grep -rn "contact_phone" app/ resources/ database/` returns no results, and the
+  ERP export has run once against the replacement field.
+- **Approval required**: yes
+
+### F2 — HIGH — data-integrity: irreversible data loss
+- **Statement**: same statement, `migration.sql:2`
+- **Why it is risky**: MySQL DDL implicitly commits and cannot be rolled back; about 3,100 non-NULL phone
+  numbers are permanently removed. Recovery needs a point-in-time restore to a separate instance, which
+  reverts unrelated tables to that moment (7-day retention, up to 5-minute RPO).
+- **Evidence**:
+  - `migration.sql:2`
+  - `schema.sql:14` — the value estimate
+  - `context.md:17` — backup policy
+- **Mitigation**: archive the column to a table or export file in the same change window if the data
+  must be preserved; otherwise record the restore point explicitly.
+- **Verification**: archived row count matches `SELECT count(*) FROM suppliers WHERE contact_phone IS NOT NULL`.
+- **Approval required**: yes
+
+### F3 — INFO — inspected and found safe
+- Lock impact is negligible: 4,800 rows on MySQL 8.0, brief metadata lock.
+- Dropping the column also drops `suppliers_contact_phone_idx`; no query depends on that index alone.
+- No views or generated columns reference the column.
+
+## Safer migration path
+1. Add `contact_phone_archive` and copy the values (batched).
+2. Release code that no longer reads or writes `contact_phone`, including the ERP export.
+3. Run the ERP export once against the replacement field and confirm the consumer accepts it.
+4. In a separate gated migration, `DROP COLUMN contact_phone`.
+
+## Rollback and recovery
+- **Schema rollback**: `ADD COLUMN contact_phone VARCHAR(32)` restores the structure but not the values.
+- **Data recovery**: requires point-in-time restore; RPO up to 5 minutes, 7-day retention. Without a
+  confirmed restore point this drop is a BLOCKER.
+- **Application rollback**: version N-1 of the application and the export job both need `contact_phone`,
+  so rolling back after the drop fails with "unknown column".
+
+## Pre-deploy checklist
+- [ ] Human approval recorded for the drop
+- [ ] ERP export migrated and verified
+- [ ] Archive of `contact_phone` written and row count matched
+- [ ] Restore point recorded, with RPO/RTO stated
+- [ ] `grep` proof that no code references the column
+```
+
+## Why this is the right report
+
+| Trap | What the example does instead |
+|---|---|
+| "The table is small, so the lock is fine" | Agrees, rates lock `INFO`, and keeps the blocker on compatibility |
+| Approving because the user said "not used" | Quotes three code paths that contradict the claim |
+| Treating "rollback" as one thing | Splits schema, data, and application rollback, and states that schema rollback loses the values |
+| Recommending `CASCADE` to make the drop work | Recommends the additive path instead |

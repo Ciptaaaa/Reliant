@@ -6,6 +6,18 @@ to fill the report's "Rollback and recovery" section.
 Three things are routinely called "rollback" and are not interchangeable. Evaluating one does not
 evaluate the others.
 
+Documentation for the engine behaviour cited here lives in `postgres.md` and `mysql.md`. Relevant
+official sources:
+
+- PostgreSQL `ALTER TABLE` (DROP COLUMN does not reclaim space; rewrites are not MVCC-safe):
+  <https://www.postgresql.org/docs/current/sql-altertable.html>
+- PostgreSQL backup and PITR: <https://www.postgresql.org/docs/current/continuous-archiving.html>
+- MySQL statements that cause an implicit commit (DDL cannot be rolled back):
+  <https://dev.mysql.com/doc/refman/8.0/en/implicit-commit.html>
+- MySQL atomic DDL (a single DDL statement is crash-safe; it is not transactional DDL):
+  <https://dev.mysql.com/doc/refman/8.0/en/atomic-ddl.html>
+- MySQL backup and recovery: <https://dev.mysql.com/doc/refman/8.0/en/backup-and-recovery.html>
+
 | Name | What it restores | What it does **not** restore |
 |---|---|---|
 | **Schema rollback** | The structure: columns, types, constraints, indexes | Any rows or values that were deleted or overwritten |
@@ -61,6 +73,10 @@ Rules:
    vacuumed, but do **not** present reading them back as a recovery plan. It is unreliable and
    unsupported.
 4. On MySQL, `DROP COLUMN`/`DROP TABLE` is immediate; there is no PostgreSQL-style invisible column.
+5. **DDL is not undone by a transaction on either engine.** PostgreSQL rolls back DDL because it is
+   transactional (except `CONCURRENTLY` forms), while MySQL commits DDL immediately. A migration file
+   that "looks atomic" is not atomic on MySQL; partial application is a real failure mode, and the
+   recovery is the backup, not a `ROLLBACK`.
 
 ## 3. Application rollback
 
@@ -99,10 +115,19 @@ version N-1 while the column is gone causes `UndefinedColumn` on the user profil
 
 ## 5. Recovery-plan checklist for destructive changes
 
+Apply this checklist only to **irreversible** steps. A reversible backfill (filling a `NULL` column,
+recomputing derived data) does not need a restore point; it needs an idempotent predicate and commit
+per batch, which `safe-migration-patterns.md` covers.
+
+For an irreversible step:
+
 - [ ] Backup/snapshot identified, with type (physical PITR, logical dump, snapshot)
 - [ ] Restore path written down and tested at least once
 - [ ] RPO and RTO stated
 - [ ] Data that is lost is named precisely
 - [ ] Down migration either correctly restores data or is explicitly absent
 - [ ] Application rollback compatibility assessed for version N-1
-- [ ] Human approval recorded with the person's role
+- [ ] Human approval to accept risk recorded, with the person's role
+
+If any of the first three is missing, the finding is `BLOCKER` — not because the step is destructive,
+but because the loss is unrecoverable.
