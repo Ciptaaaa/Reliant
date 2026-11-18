@@ -57,6 +57,15 @@ step 5.
       column, index, constraint). Include raw SQL, ORM models, query builders, views, migrations
       still pending, seeders, analytics jobs, reporting code, and ETL scripts. Cite `path:line` for
       each hit, and note absence explicitly (`no references outside schema.sql`).
+
+      **How to get the line number, because a citation without one does not count.** Use
+      `grep -rn "<identifier>" app/ lib/ config/` and paste its output verbatim: it is already
+      `path:line:text`. Do not renumber by hand and do not cite a file you only skimmed. The
+      statement under review is `migration.sql:<n>` from the same grep. Every bullet under
+      **Evidence** needs a line, including the data facts from `schema.sql` (`schema.sql:4`).
+
+      A claim you cannot turn into `path:line` is not a finding. Move it to `Scope → Unknowns` and say
+      what the missing value would change.
 - [ ] **Step 5 — Assess operational impact and rollback.** Decide whether the change rewrites the
       table, takes a blocking lock, needs a backfill, or is irreversible. Compare against the
       deployment model: does an older application version still run while the new schema is live?
@@ -72,6 +81,16 @@ migration needs them:
 - Need a safer version of a risky operation: read `references/safe-migration-patterns.md`.
 - Need a recovery or downgrade plan, or the user asked about rollback: read
   `references/rollback-strategy.md`.
+
+- [ ] **Step 6 — Write the report from the template, then lint it.** Open `report-template.md` and copy
+      its skeleton. It contains the only accepted structure. Then run the linter on your own output:
+
+      ```bash
+      python scripts/linter_report.py <the report you just wrote>
+      ```
+
+      Do not send a report that fails the linter. The linter and the scorer read the same contract, so
+      a non-conforming report is scored as a miss even when the analysis is right.
 
 ## Gotchas
 
@@ -146,76 +165,63 @@ without a recovery plan is not.
 
 ## Report format
 
-This format is **mandatory and machine-parsed**. Emit exactly these six headings, in this order, and
-nothing else. Do not add a Summary, Overview, Conclusion, or Notes section; put that content in the
-relevant finding. A tool matches your output against this contract, so a different structure is an
-unparseable report even when the analysis is correct.
+The report is **machine-parsed**. There is exactly one accepted structure, and it lives in
+[`report-template.md`](report-template.md). Open that file, copy its skeleton into your answer, and
+replace every `<...>`. Do not restyle it, do not add a heading, do not rename a heading.
 
-Rules that are easy to get wrong:
+The six headings, in this order — nothing else:
 
-1. The verdict word is exactly one of `BLOCKED`, `CONDITIONAL`, `APPROVED`. Write `BLOCKED`, not
-   `BLOCK`, `BLOCKING`, or `DO NOT MERGE`.
-2. Every finding heading begins with `### F<number> — <SEVERITY> — <category>`, using the literal
-   severity token and one category from the list below. Severity belongs in the heading, not in a
-   separate `**Risk:**` line.
-3. Quote the file path with a line number in **Evidence**. A finding without a path citation is an
-   Unknown, not a finding.
-
-Categories (use one per finding): `destructive-column-drop`, `destructive-table-drop`, `type-change`,
-`not-null-add`, `unique-constraint`, `foreign-key`, `index-build`, `lock-and-rewrite`, `backfill`,
-`rename`, `charset-collation`, `implicit-commit`, `application-compatibility`, `data-integrity`,
-`operational`, `no-risk-observed`.
-
-````markdown
+```text
 # Migration Guard Report
-
 ## Scope
-- **Migration**: path or filename
-- **Engine**: PostgreSQL 16 / MySQL 8.0 / unknown
-- **Inspected**: files and directories you actually read
-- **Not inspected**: directories, external services, analytics, mobile clients, etc.
-- **Unknowns**: unknown version, row counts, deployment model, missing schema files
-
 ## Verdict
-**BLOCKED** — one-sentence justification that names the decisive finding.
-
-> APPROVED (when used): no blocker found for the inspected scope and evidence. This is not a
-> guarantee of production safety.
-
 ## Findings
+## Safer migration path
+## Rollback and recovery
+## Pre-deploy checklist
+```
 
+`## Evidence`, `## Blast radius`, `## Summary`, `## Conclusion`, `## Notes`, `## Recommended fix` are all
+**not** sections. Their content belongs inside a finding (`Impact`, `Evidence`) or in one of the six.
+A report with seven sections is unparseable even when every sentence in it is correct.
+
+Every finding is exactly this shape:
+
+```markdown
 ### F1 — BLOCKER — destructive-column-drop
-- **Statement**: `ALTER TABLE users DROP COLUMN phone` in `migration.sql:2`
-- **Why it is risky**: concrete consequence (data lost, query fails, table locked for N minutes)
+- **Statement**: `ALTER TABLE users DROP COLUMN phone` in `migration.sql:2` — removes the column and its values
 - **Evidence**:
   - `app/controllers/users_controller.rb:31` — `slice(:phone)` returns it in the API response
-- **Mitigation**: the safe alternative or precondition
-- **Verification**: how a human confirms the mitigation worked
-- **Approval**: `none` | `schedule` | `accept-risk`
-- **Reversible**: yes | no
+  - `migration.sql:2` — the `DROP COLUMN` under review
+  - `schema.sql:4` — `phone varchar(32)`; ~240,000 non-NULL values, so this removes live data
+- **Impact**: the profile endpoint raises `PG::UndefinedColumn`; the 240,000 values are gone
+- **Mitigation**: retire every reader and deploy first; drop in a later, separately approved migration
+- **Verification**: `grep -rn "phone" app/ lib/` finds no reader; the nightly export succeeds twice
+- **Approval**: accept-risk
+- **Reversible**: no
+```
 
-### F2 — INFO — no-risk-observed
-- **Statement**: what you examined
-- **Evidence**: `path:LINE`
-- **Why it is safe**: the mechanism or schema fact
+- `SEVERITY` is one of `BLOCKER`, `HIGH`, `MEDIUM`, `LOW`, `INFO` — the literal token, in the heading.
+- `category` is one of the sixteen in [`report-template.md`](report-template.md#categories-use-exactly-one-per-finding).
+- `**Approval**` must end with exactly `none`, `schedule`, or `accept-risk`.
+- `**Reversible**` must be `yes` or `no`.
+- A clean migration gets one `### F1 — INFO — no-risk-observed` finding. A report with no findings is a
+  failure, not a pass.
+- A lock, rewrite, backfill, or replica-lag cost is **its own finding** with `Approval: schedule`. Do not
+  leave it only in `## Safer migration path` or the checklist — a cost that is not a finding is a cost
+  nobody gates.
+- Two findings may share a severity and category; they are different mechanisms and each needs its own
+  `Statement` and `Evidence`.
 
-## Safer migration path
-Numbered, ordered steps for the recommended alternative (for example expand-and-contract), with the
-engine-specific syntax the user needs.
+**Before you answer, lint the report you wrote:**
 
-## Rollback and recovery
-- **Schema rollback**: what reverses the structure, and whether it is cleanly reversible
-- **Data recovery**: what happens to rows changed or deleted by this migration
-- **Application rollback**: whether the previous app version works with the new schema
-  (call out separately when "rollback" would not restore data)
+```bash
+python scripts/linter_report.py <report.md>
+```
 
-## Pre-deploy checklist
-- [ ] Human approval recorded for each `accept-risk` step
-- [ ] Backup or snapshot confirmed (type and scope)
-- [ ] Old application version status confirmed
-- [ ] Verification queries listed below are runnable
-- [ ] (any further case-specific item)
-````
+Exit code 1 lists each deviation with its line and the fix. Send nothing that fails. The scorer and the
+linter read the same contract, so a non-conforming report loses recall credit even when the analysis is
+right — that is the defect that made earlier iterations score 0% on format.
 
 ## Calibration examples
 
@@ -239,11 +245,8 @@ If `application-usage.md` and the user confirm there are zero NULL rows and the 
 is `LOW`. If NULL rows exist, `VALIDATE` fails and the migration is `HIGH` with a backfill-then-validate
 mitigation. Do not apply the PostgreSQL pattern blindly in MySQL — the mechanisms differ.
 
-**Category flags for classification.** Tag every finding with a `category` so results are comparable
-across runs. Use one of: `destructive-column-drop`, `destructive-table-drop`, `type-change`,
-`not-null-add`, `unique-constraint`, `foreign-key`, `index-build`, `lock-and-rewrite`,
-`backfill`, `rename`, `charset-collation`, `implicit-commit`, `application-compatibility`,
-`data-integrity`, `operational`, `no-risk-observed`.
+A full worked pair — one conforming report and one rejected report on the same migration, annotated
+line by line — is in `examples/good-report.report.md` and `examples/bad-report.report.md`.
 
 ## Anti-patterns to reject
 

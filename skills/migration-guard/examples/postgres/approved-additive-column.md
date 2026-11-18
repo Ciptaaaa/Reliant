@@ -30,9 +30,9 @@ ALTER TABLE accounts ADD COLUMN nickname varchar(80);
 # Migration Guard Report
 
 ## Scope
-- **Migration**: db/migrate/20261116_add_nickname.sql
+- **Migration**: `db/migrate/20261116_add_nickname.sql`
 - **Engine**: PostgreSQL 16
-- **Inspected**: schema.sql, migration.sql, app/, lib/ (grep for `nickname` and `accounts`)
+- **Inspected**: `schema.sql`, `migration.sql`, `app/`, `lib/` (grep for `nickname` and `accounts`)
 - **Not inspected**: mobile clients, analytics warehouse
 - **Unknowns**: none material. The future consumer is out of scope for this migration.
 
@@ -40,30 +40,35 @@ ALTER TABLE accounts ADD COLUMN nickname varchar(80);
 **APPROVED** — a single nullable column with no default is a metadata-only change, and no code
 references the column yet.
 
-> No blocker was found for the inspected scope and the evidence above. This is not a guarantee of
-> production safety.
+> APPROVED means no blocker was found in the inspected scope with the evidence available. This is not a
+> production guarantee.
 
 ## Findings
 
-### F1 — LOW — metadata-only column add
-- **Statement**: `ALTER TABLE accounts ADD COLUMN nickname varchar(80)` in `migration.sql:2`
-- **Why it is risky**: it still takes `ACCESS EXCLUSIVE` for the catalog update, so it queues behind
-  long-running transactions on `accounts`
+### F1 — LOW — operational
+- **Statement**: `ALTER TABLE accounts ADD COLUMN nickname varchar(80)` in `migration.sql:2` — adds one nullable column, no default, no constraint
 - **Evidence**:
   - `migration.sql:2` — nullable column, no default
-  - `schema.sql:1` — table has no generated columns or partitioning
-- **Mitigation**: none required. Optional: `SET lock_timeout = '3s'` in the migration session.
-- **Verification**: the migration applies without waiting; `\d accounts` shows the column.
-- **Approval required**: no
+  - `schema.sql:8` — `accounts` has no generated columns and is not partitioned, so the catalog update is the only work
+- **Impact**: it still takes `ACCESS EXCLUSIVE` for the catalog update, so it queues behind a long-running transaction on `accounts`
+- **Mitigation**: none required. Optional: `SET lock_timeout = '3s'` in the migration session so it fails fast instead of queueing.
+- **Verification**: the migration applies without waiting; `\d accounts` shows `nickname varchar(80)`
+- **Approval**: none
+- **Reversible**: yes
 
-### F2 — INFO — inspected and found safe
-- No column is altered or dropped; no constraint or index is added.
-- No code path reads or writes `nickname` (`app/`, `lib/`), so the old and new application versions
-  both work against this schema.
-- No data is rewritten.
+### F2 — INFO — no-risk-observed
+- **Statement**: checked whether anything else in the repository depends on the new column
+- **Evidence**:
+  - `application-usage.md` — `grep -rn "nickname" app/ lib/` returns nothing
+  - `schema.sql:11` — no constraint or index mentions `nickname`
+- **Impact**: none. Old and new application versions both work against this schema, and no data is rewritten.
+- **Mitigation**: none
+- **Verification**: the grep above returns nothing after the deploy too
+- **Approval**: none
+- **Reversible**: yes
 
 ## Safer migration path
-Not needed. This migration is already the additive form.
+Not needed. This migration is already the additive, metadata-only form.
 
 ## Rollback and recovery
 - **Schema rollback**: `ALTER TABLE accounts DROP COLUMN nickname` — clean, because nothing writes to it.
@@ -81,7 +86,7 @@ Not needed. This migration is already the additive form.
 |---|---|
 | "Adding a column on 2.4M rows may be slow" | States the metadata-only mechanism with the citation that supports it |
 | "Schedule a backfill" | Says a backfill is not needed, because the column is nullable |
-| "MEDIUM: needs coordination" | Rates lock impact `LOW` and keeps the verdict `APPROVED` |
+| "MEDIUM: needs coordination" | Rates the lock cost `LOW` and keeps the verdict `APPROVED` |
 | "Safe" | Repeats the scope sentence and lists what was not inspected |
 
 A report that adds a backfill recommendation or a rewrite warning is a false positive, and

@@ -47,40 +47,41 @@ ERP export.
 
 ## Findings
 
-### F1 — BLOCKER — destructive-column-drop: column still used by application code
-- **Statement**: `ALTER TABLE suppliers DROP COLUMN contact_phone` in `migration.sql:2`
-- **Why it is risky**: after the drop, the supplier form fails validation on save, the purchase order PDF
-  raises `SQLSTATE[42S22] Column not found`, and the nightly ERP export stops until a new image is
-  released
+### F1 — BLOCKER — destructive-column-drop
+- **Statement**: `ALTER TABLE suppliers DROP COLUMN contact_phone` in `migration.sql:2` — removes the column and its ~3,100 non-NULL values
 - **Evidence**:
-  - `application-usage.md:7` — `Supplier::$fillable` includes `contact_phone`
-  - `application-usage.md:18` — `app/Services/ErpExport.php:37` selects `contact_phone` and runs nightly
-    from the last released image
+  - `app/Models/Supplier.php:21` — lists `contact_phone` in `$fillable`
+  - `app/Services/ErpExport.php:37` — selects `contact_phone`; the nightly ERP export runs from the last released image
+  - `resources/views/purchase-orders/pdf.blade.php:63` — the purchase order PDF prints `contact_phone`
   - `migration.sql:2` — the drop
-- **Mitigation**: stop reading and writing the column and migrate the ERP export to a replacement field
-  in an earlier release; drop in a separate migration after one full deploy cycle.
-- **Verification**: `grep -rn "contact_phone" app/ resources/ database/` returns no results, and the
-  ERP export has run once against the replacement field.
-- **Approval required**: yes
+- **Impact**: after the drop the supplier form fails on save, the purchase order PDF raises `SQLSTATE[42S22] Column not found`, and the nightly ERP export stops until a new image is released
+- **Mitigation**: stop reading and writing the column and migrate the ERP export to a replacement field in an earlier release; drop in a separate migration after one full deploy cycle
+- **Verification**: `grep -rn "contact_phone" app/ resources/ database/` returns no results, and the ERP export has run once against the replacement field
+- **Approval**: accept-risk
+- **Reversible**: no
 
-### F2 — HIGH — data-integrity: irreversible data loss
-- **Statement**: same statement, `migration.sql:2`
-- **Why it is risky**: MySQL DDL implicitly commits and cannot be rolled back; about 3,100 non-NULL phone
-  numbers are permanently removed. Recovery needs a point-in-time restore to a separate instance, which
-  reverts unrelated tables to that moment (7-day retention, up to 5-minute RPO).
+### F2 — HIGH — data-integrity
+- **Statement**: the same statement, `migration.sql:2` — MySQL DDL commits implicitly, so the values go with it
 - **Evidence**:
-  - `migration.sql:2`
-  - `schema.sql:14` — the value estimate
-  - `context.md:17` — backup policy
-- **Mitigation**: archive the column to a table or export file in the same change window if the data
-  must be preserved; otherwise record the restore point explicitly.
-- **Verification**: archived row count matches `SELECT count(*) FROM suppliers WHERE contact_phone IS NOT NULL`.
-- **Approval required**: yes
+  - `schema.sql:14` — about 3,100 non-NULL `contact_phone` values exist
+  - `context.md:17` — MySQL DDL does not roll back; the only restore path is point-in-time recovery with 7-day retention and up to 5-minute RPO
+- **Impact**: about 3,100 phone numbers are permanently removed; recovery reverts unrelated tables to that moment
+- **Mitigation**: archive the column to a table or export file in the same window if the data must be preserved; otherwise record the restore point explicitly
+- **Verification**: archived row count matches `SELECT count(*) FROM suppliers WHERE contact_phone IS NOT NULL`
+- **Approval**: accept-risk
+- **Reversible**: no
 
-### F3 — INFO — inspected and found safe
-- Lock impact is negligible: 4,800 rows on MySQL 8.0, brief metadata lock.
-- Dropping the column also drops `suppliers_contact_phone_idx`; no query depends on that index alone.
-- No views or generated columns reference the column.
+### F3 — INFO — no-risk-observed
+- **Statement**: checked lock impact, the attached index, and DB-side dependencies
+- **Evidence**:
+  - `schema.sql:14` — `suppliers` has about 4,800 rows, so the metadata lock is brief
+  - `schema.sql:11` — `suppliers_contact_phone_idx` is attached to `contact_phone`; no query depends on that index alone
+  - `application-usage.md:25` — no views or generated columns reference the column
+- **Impact**: none. The risk in this migration is compatibility and data loss, not locking.
+- **Mitigation**: none
+- **Verification**: `SHOW INDEX FROM suppliers` after the drop lists no `suppliers_contact_phone_idx`
+- **Approval**: none
+- **Reversible**: yes
 
 ## Safer migration path
 1. Add `contact_phone_archive` and copy the values (batched).
