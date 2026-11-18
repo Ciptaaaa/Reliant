@@ -1,0 +1,35 @@
+{
+  "case_id": "PG-007",
+  "db_engine": "postgres",
+  "kind": "positive",
+  "title": "Add nullable column (safe)",
+  "expected_verdict": "APPROVED",
+  "allowed_verdicts": ["APPROVED"],
+  "destructive": false,
+  "required_findings": [
+    {
+      "id": "F1",
+      "severity": "LOW",
+      "critical": false,
+      "category": "operational",
+      "must_cite_evidence": ["migration.sql", "schema.sql"],
+      "must_mention_any": ["metadata", "no rewrite", "not rewrite", "does not rewrite", "fast"],
+      "requires_human_approval": false
+    }
+  ],
+  "forbidden_findings": [
+    {
+      "category": "lock-and-rewrite",
+      "max_severity_if_present": "LOW",
+      "reason": "A metadata-only ADD COLUMN must not be reported above LOW; a rewrite claim is a false positive."
+    },
+    {
+      "category": "data-integrity",
+      "max_severity_if_present": "INFO",
+      "reason": "No data is changed by adding a nullable column."
+    }
+  ],
+  "required_unknowns": [],
+  "required_report_sections": ["scope", "verdict", "findings"],
+  "notes": "The core assertion is the APPROVED verdict plus a LOW finding that explains the metadata-only add. Reporting the momentary ACCESS EXCLUSIVE as a LOW is acceptable; reporting any rewrite or data risk is a false positive."
+}

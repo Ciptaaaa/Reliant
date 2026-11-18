@@ -1,0 +1,35 @@
+{
+  "case_id": "MY-007",
+  "db_engine": "mysql",
+  "kind": "positive",
+  "title": "Add nullable column with instant DDL supported",
+  "expected_verdict": "APPROVED",
+  "allowed_verdicts": ["APPROVED"],
+  "destructive": false,
+  "required_findings": [
+    {
+      "id": "F1",
+      "severity": "LOW",
+      "critical": false,
+      "category": "operational",
+      "must_cite_evidence": ["migration.sql", "schema.sql"],
+      "must_mention_any": ["INSTANT", "metadata", "no rebuild", "not rebuild", "no copy"],
+      "requires_human_approval": false
+    }
+  ],
+  "forbidden_findings": [
+    {
+      "category": "lock-and-rewrite",
+      "max_severity_if_present": "LOW",
+      "reason": "INSTANT add-column is supported here; claiming a rebuild is a false positive."
+    },
+    {
+      "category": "data-integrity",
+      "max_severity_if_present": "INFO",
+      "reason": "No data changes."
+    }
+  ],
+  "required_unknowns": [],
+  "required_report_sections": ["scope", "verdict", "findings"],
+  "notes": "Also correct: mentioning that INSTANT add-column requires 8.0.12+ while still approving."
+}

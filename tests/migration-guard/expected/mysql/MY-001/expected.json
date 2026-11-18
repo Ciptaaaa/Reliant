@@ -1,0 +1,34 @@
+{
+  "case_id": "MY-001",
+  "db_engine": "mysql",
+  "kind": "positive",
+  "title": "Drop column that application code still uses",
+  "expected_verdict": "BLOCKED",
+  "allowed_verdicts": ["BLOCKED"],
+  "destructive": true,
+  "required_findings": [
+    {
+      "id": "F1",
+      "severity": "BLOCKER",
+      "critical": true,
+      "category": "destructive-column-drop",
+      "must_cite_evidence": ["application-usage.md", "migration.sql"],
+      "must_mention_any": ["contact_phone", "erp", "supplier"],
+      "mitigation_must_mention_any": ["deploy", "stop using", "remove the code", "expand", "no longer reference"],
+      "requires_human_approval": true
+    },
+    {
+      "id": "F2",
+      "severity": "HIGH",
+      "critical": false,
+      "category": "data-integrity",
+      "must_cite_evidence": ["migration.sql", "context.md"],
+      "must_mention_any": ["implicit commit", "cannot be rolled back", "data loss", "irreversible", "restore"],
+      "requires_human_approval": true
+    }
+  ],
+  "forbidden_findings": [],
+  "required_unknowns": ["erp"],
+  "required_report_sections": ["scope", "verdict", "findings"],
+  "notes": "Lock is trivial here (small table, MySQL 8.0). Reporting it as HIGH locking is a false positive."
+}

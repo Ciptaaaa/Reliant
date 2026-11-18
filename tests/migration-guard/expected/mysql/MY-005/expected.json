@@ -1,0 +1,40 @@
+{
+  "case_id": "MY-005",
+  "db_engine": "mysql",
+  "kind": "positive",
+  "title": "Online DDL with an unsupported algorithm",
+  "expected_verdict": "CONDITIONAL",
+  "allowed_verdicts": ["CONDITIONAL"],
+  "destructive": false,
+  "required_findings": [
+    {
+      "id": "F1",
+      "severity": "HIGH",
+      "critical": false,
+      "category": "lock-and-rewrite",
+      "must_cite_evidence": ["migration.sql"],
+      "must_mention_any": ["INSTANT", "not supported", "rejected", "fails", "error"],
+      "mitigation_must_mention_any": ["INPLACE", "COPY", "algorithm", "expand", "staging"],
+      "requires_human_approval": false
+    },
+    {
+      "id": "F2",
+      "severity": "HIGH",
+      "critical": false,
+      "category": "lock-and-rewrite",
+      "must_cite_evidence": ["migration.sql", "schema.sql"],
+      "must_mention_any": ["rebuild", "copy", "18", "lock", "replica", "lag"],
+      "mitigation_must_mention_any": ["staging", "window", "measure", "lag"]
+    }
+  ],
+  "forbidden_findings": [
+    {
+      "category": "data-integrity",
+      "max_severity_if_present": "LOW",
+      "reason": "CHAR(3) to VARCHAR(3) of valid data does not lose data."
+    }
+  ],
+  "required_unknowns": ["staging", "replica"],
+  "required_report_sections": ["scope", "verdict", "findings"],
+  "notes": "Claiming the statement runs instantly is the core failure; claiming it silently copies is a secondary error the notes call out."
+}

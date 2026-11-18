@@ -1,0 +1,28 @@
+{
+  "case_id": "NEG-002",
+  "db_engine": "postgres",
+  "kind": "negative",
+  "title": "Create a used index concurrently (safe)",
+  "expected_verdict": "APPROVED",
+  "allowed_verdicts": ["APPROVED"],
+  "destructive": false,
+  "required_findings": [
+    {
+      "id": "F1",
+      "severity": "LOW",
+      "critical": false,
+      "category": "index-build",
+      "must_cite_evidence": ["migration.sql"],
+      "must_mention_any": ["CONCURRENTLY", "non-blocking", "does not block", "no block"]
+    }
+  ],
+  "forbidden_findings": [
+    { "category": "data-integrity", "max_severity_if_present": "INFO" },
+    { "category": "lock-and-rewrite", "max_severity_if_present": "LOW" },
+    { "category": "destructive-column-drop", "max_severity_if_present": "INFO" },
+    { "category": "not-null-add", "max_severity_if_present": "INFO" }
+  ],
+  "required_unknowns": [],
+  "required_report_sections": ["scope", "verdict", "findings"],
+  "notes": "Flagging the missing atomic=True as a problem is a false positive here; the file shows atomic = False."
+}

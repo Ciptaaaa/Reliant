@@ -1,0 +1,51 @@
+{
+  "case_id": "MY-003",
+  "db_engine": "mysql",
+  "kind": "positive",
+  "title": "UNIQUE index with duplicate rows",
+  "expected_verdict": "BLOCKED",
+  "allowed_verdicts": ["BLOCKED"],
+  "destructive": true,
+  "required_findings": [
+    {
+      "id": "F1",
+      "severity": "BLOCKER",
+      "critical": true,
+      "category": "unique-constraint",
+      "must_cite_evidence": ["schema.sql", "migration.sql"],
+      "must_mention_any": ["duplicate", "2,918", "2918", "3,067", "3067", "duplicate entry"],
+      "mitigation_must_mention_any": ["dedupe", "deduplication", "normalise case", "resolve", "merge", "clean"],
+      "requires_human_approval": true
+    },
+    {
+      "id": "F2",
+      "severity": "HIGH",
+      "critical": false,
+      "category": "index-build",
+      "must_cite_evidence": ["migration.sql"],
+      "must_mention_any": ["INPLACE", "ALGORITHM", "online", "scan"],
+      "mitigation_must_mention_any": ["staging", "SHOW WARNINGS", "metadata_lock", "dedupe", "first"]
+    },
+    {
+      "id": "F2",
+      "severity": "HIGH",
+      "critical": false,
+      "category": "index-build",
+      "must_cite_evidence": ["migration.sql"],
+      "must_mention_any": ["INPLACE", "ALGORITHM", "online", "scan"],
+      "mitigation_must_mention_any": ["staging", "metadata", "dedupe", "first"]
+    },
+    {
+      "id": "F3",
+      "severity": "MEDIUM",
+      "critical": false,
+      "category": "application-compatibility",
+      "must_cite_evidence": ["application-usage.md"],
+      "must_mention_any": ["import", "ImportCustomers", "lowercase", "case"]
+    }
+  ],
+  "forbidden_findings": [],
+  "required_unknowns": ["csv", "staging"],
+  "required_report_sections": ["scope", "verdict", "findings"],
+  "notes": "The collation insight (ai_ci makes lower=upper collide) is the depth marker of this case."
+}

@@ -1,0 +1,30 @@
+{
+  "case_id": "NEG-001",
+  "db_engine": "postgres",
+  "kind": "negative",
+  "title": "Add nullable column, nothing else (safe)",
+  "expected_verdict": "APPROVED",
+  "allowed_verdicts": ["APPROVED"],
+  "destructive": false,
+  "required_findings": [
+    {
+      "id": "F1",
+      "severity": "LOW",
+      "critical": false,
+      "category": "operational",
+      "must_cite_evidence": ["migration.sql"],
+      "must_mention_any": ["metadata", "no rewrite", "not rewrite", "nullable"]
+    }
+  ],
+  "forbidden_findings": [
+    { "category": "data-integrity", "max_severity_if_present": "INFO" },
+    { "category": "lock-and-rewrite", "max_severity_if_present": "LOW" },
+    { "category": "backfill", "max_severity_if_present": "INFO" },
+    { "category": "destructive-column-drop", "max_severity_if_present": "INFO" },
+    { "category": "unique-constraint", "max_severity_if_present": "INFO" },
+    { "category": "foreign-key", "max_severity_if_present": "INFO" }
+  ],
+  "required_unknowns": [],
+  "required_report_sections": ["scope", "verdict", "findings"],
+  "notes": "Pure false-positive control."
+}

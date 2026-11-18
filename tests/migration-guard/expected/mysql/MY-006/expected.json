@@ -1,0 +1,35 @@
+{
+  "case_id": "MY-006",
+  "db_engine": "mysql",
+  "kind": "positive",
+  "title": "Table rebuild and metadata lock",
+  "expected_verdict": "CONDITIONAL",
+  "allowed_verdicts": ["CONDITIONAL"],
+  "destructive": false,
+  "required_findings": [
+    {
+      "id": "F1",
+      "severity": "HIGH",
+      "critical": false,
+      "category": "lock-and-rewrite",
+      "must_cite_evidence": ["migration.sql", "application-usage.md"],
+      "must_mention_any": ["metadata lock", "MDL", "SettlementReport", "queue", "pile"],
+      "mitigation_must_mention_any": ["wait", "lock_wait_timeout", "schedule", "after", "replica"]
+    },
+    {
+      "id": "F2",
+      "severity": "HIGH",
+      "critical": false,
+      "category": "lock-and-rewrite",
+      "must_cite_evidence": ["migration.sql", "schema.sql"],
+      "must_mention_any": ["INSTANT", "INPLACE", "LOCK=SHARED"],
+      "mitigation_must_mention_any": ["INSTANT", "LOCK=DEFAULT", "remove", "let the server"]
+    }
+  ],
+  "forbidden_findings": [
+    { "category": "data-integrity", "max_severity_if_present": "LOW" }
+  ],
+  "required_unknowns": ["staging", "replica"],
+  "required_report_sections": ["scope", "verdict", "findings"],
+  "notes": "Depth marker: the MDL pile-up and the fact that INSTANT only permits LOCK=DEFAULT."
+}

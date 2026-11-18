@@ -1,0 +1,42 @@
+{
+  "case_id": "PG-005",
+  "db_engine": "postgres",
+  "kind": "positive",
+  "title": "Narrowing type change loses values",
+  "expected_verdict": "CONDITIONAL",
+  "allowed_verdicts": ["CONDITIONAL"],
+  "destructive": true,
+  "required_findings": [
+    {
+      "id": "F1",
+      "severity": "HIGH",
+      "critical": false,
+      "category": "type-change",
+      "must_cite_evidence": ["schema.sql", "migration.sql"],
+      "must_mention_any": ["3,842", "3842", "2147483647", "2^31", "out of range", "cannot be cast", "overflows"],
+      "mitigation_must_mention_any": ["USING", "bigint", "quarantine", "decision", "numeric"],
+      "requires_human_approval": true
+    },
+    {
+      "id": "F2",
+      "severity": "HIGH",
+      "critical": false,
+      "category": "lock-and-rewrite",
+      "must_cite_evidence": ["migration.sql"],
+      "must_mention_any": ["rewrite"],
+      "mitigation_must_mention_any": ["expand", "new column", "batch", "CONCURRENTLY", "dual"]
+    },
+    {
+      "id": "F3",
+      "severity": "MEDIUM",
+      "critical": false,
+      "category": "operational",
+      "must_cite_evidence": ["migration.sql"],
+      "must_mention_any": ["ANALYZE", "statistics"]
+    }
+  ],
+  "forbidden_findings": [],
+  "required_unknowns": ["SDK", "disk"],
+  "required_report_sections": ["scope", "verdict", "findings"],
+  "notes": "Either HIGH severity with different categories (type-change and lock-and-rewrite) counts, as long as each required finding is present."
+}

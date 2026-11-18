@@ -1,0 +1,28 @@
+{
+  "case_id": "NEG-003",
+  "db_engine": "mysql",
+  "kind": "negative",
+  "title": "Create a table with no consumers (safe)",
+  "expected_verdict": "APPROVED",
+  "allowed_verdicts": ["APPROVED"],
+  "destructive": false,
+  "required_findings": [
+    {
+      "id": "F1",
+      "severity": "LOW",
+      "critical": false,
+      "category": "operational",
+      "must_cite_evidence": ["migration.sql"],
+      "must_mention_any": ["new table", "create table", "empty", "additive", "new"]
+    }
+  ],
+  "forbidden_findings": [
+    { "category": "data-integrity", "max_severity_if_present": "INFO" },
+    { "category": "lock-and-rewrite", "max_severity_if_present": "LOW" },
+    { "category": "backfill", "max_severity_if_present": "INFO" },
+    { "category": "foreign-key", "max_severity_if_present": "LOW" }
+  ],
+  "required_unknowns": [],
+  "required_report_sections": ["scope", "verdict", "findings"],
+  "notes": "Pure false-positive control for additive DDL."
+}

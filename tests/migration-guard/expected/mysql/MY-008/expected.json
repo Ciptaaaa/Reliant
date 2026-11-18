@@ -1,0 +1,40 @@
+{
+  "case_id": "MY-008",
+  "db_engine": "mysql",
+  "kind": "positive",
+  "title": "Rename column with application compatibility problem",
+  "expected_verdict": "CONDITIONAL",
+  "allowed_verdicts": ["CONDITIONAL"],
+  "destructive": true,
+  "required_findings": [
+    {
+      "id": "F1",
+      "severity": "HIGH",
+      "critical": false,
+      "category": "rename",
+      "must_cite_evidence": ["application-usage.md", "migration.sql", "context.md"],
+      "must_mention_any": ["old version", "rolling", "does not exist", "break", "cron", "scheduler", "sms"],
+      "mitigation_must_mention_any": ["add column", "add new column", "expand", "both"],
+      "requires_human_approval": true
+    },
+    {
+      "id": "F2",
+      "severity": "LOW",
+      "critical": false,
+      "category": "lock-and-rewrite",
+      "must_cite_evidence": ["migration.sql"],
+      "must_mention_any": ["instant", "metadata", "ACCESS EXCLUSIVE"],
+      "requires_human_approval": false
+    }
+  ],
+  "forbidden_findings": [
+    {
+      "category": "data-integrity",
+      "max_severity_if_present": "LOW",
+      "reason": "RENAME does not lose data."
+    }
+  ],
+  "required_unknowns": ["deploy", "mobile"],
+  "required_report_sections": ["scope", "verdict", "findings"],
+  "notes": "A report that additionally flags the CHANGE COLUMN full-definition trap or API JSON field change is a bonus."
+}

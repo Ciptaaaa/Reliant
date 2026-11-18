@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reliant.dev/schemas/expected-result.schema.json",
+  "title": "Migration Guard expected result",
+  "description": "Machine-checkable expectations for one test case. Consumed by scripts/evaluate_reports.py. Severity semantics are frozen in CONTRIBUTING.md; 'critical: true' is redundant with severity == BLOCKER and exists so that the evaluator can assert consistency.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "case_id",
+    "db_engine",
+    "kind",
+    "expected_verdict",
+    "required_findings",
+    "allowed_verdicts"
+  ],
+  "properties": {
+    "case_id": {
+      "type": "string",
+      "pattern": "^(PG|MY|NEG)-[0-9]{3}$"
+    },
+    "db_engine": {
+      "enum": ["postgres", "mysql", "none"]
+    },
+    "kind": {
+      "$comment": "positive = the migration has risk that must be found. negative = the migration is safe and must not be reported as risky.",
+      "enum": ["positive", "negative"]
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "expected_verdict": {
+      "enum": ["BLOCKED", "CONDITIONAL", "APPROVED"]
+    },
+    "allowed_verdicts": {
+      "$comment": "Verdict accuracy counts a run as correct only when its verdict is in this list. Keep it as tight as the severity rules allow; add a second value only when a defensible reading exists.",
+      "type": "array",
+      "items": { "enum": ["BLOCKED", "CONDITIONAL", "APPROVED"] },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "required_findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/requiredFinding" }
+    },
+    "forbidden_findings": {
+      "$comment": "Categories that must NOT appear in the agent report. Used for false-positive control.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/forbiddenFinding" }
+    },
+    "required_unknowns": {
+      "$comment": "Facts the report must list under Unknowns because the case deliberately withholds them.",
+      "type": "array",
+      "items": { "type": "string", "minLength": 3 }
+    },
+    "required_report_sections": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "scope",
+          "verdict",
+          "findings",
+          "unknowns",
+          "safer_migration_path",
+          "rollback_and_recovery",
+          "pre_deploy_checklist"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "destructive": {
+      "$comment": "True when the migration contains a destructive step. The report must then state an explicit human approval gate.",
+      "type": "boolean"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "requiredFinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "severity", "category", "critical"],
+      "properties": {
+        "id": {
+          "$comment": "Stable identifier local to the case, e.g. F1.",
+          "type": "string",
+          "pattern": "^F[0-9]{1,2}$"
+        },
+        "severity": {
+          "enum": ["BLOCKER", "HIGH", "MEDIUM", "LOW", "INFO"]
+        },
+        "critical": {
+          "type": "boolean"
+        },
+        "category": {
+          "enum": [
+            "destructive-column-drop",
+            "destructive-table-drop",
+            "type-change",
+            "not-null-add",
+            "unique-constraint",
+            "foreign-key",
+            "index-build",
+            "lock-and-rewrite",
+            "backfill",
+            "rename",
+            "charset-collation",
+            "implicit-commit",
+            "application-compatibility",
+            "data-integrity",
+            "operational",
+            "no-risk-observed"
+          ]
+        },
+        "must_cite_evidence": {
+          "$comment": "Each entry is a file path (optionally with :line) that the evidence in the expected.md quotes. The evaluator checks that the cited path appears in the report and that the report cites it near the finding.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 3 },
+          "minItems": 1
+        },
+        "must_mention_any": {
+          "$comment": "At least one of these strings (case-insensitive substring) must appear in the finding text. Encodes the core concept the finding must convey.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 2 },
+          "minItems": 1
+        },
+        "mitigation_must_mention_any": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 2 },
+          "minItems": 1
+        },
+        "requires_human_approval": {
+          "type": "boolean"
+        }
+      }
+    },
+    "forbiddenFinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["category"],
+      "properties": {
+        "category": {
+          "type": "string",
+          "minLength": 3
+        },
+        "max_severity_if_present": {
+          "$comment": "If the category does appear, its severity must not exceed this level.",
+          "enum": ["BLOCKER", "HIGH", "MEDIUM", "LOW", "INFO"]
+        },
+        "reason": { "type": "string" }
+      }
+    }
+  }
+}
