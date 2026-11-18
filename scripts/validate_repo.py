@@ -31,6 +31,7 @@ from pathlib import Path
 
 NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 SEVERITIES = ("BLOCKER", "HIGH", "MEDIUM", "LOW", "INFO")
+APPROVAL_CLASSES = ("none", "schedule", "accept-risk")
 VERDICTS = ("BLOCKED", "CONDITIONAL", "APPROVED")
 CATEGORIES = (
     "destructive-column-drop",
@@ -211,22 +212,21 @@ def check_compat_layers() -> None:
                 fail(f"{layer}/{name}: missing compat entry")
                 continue
             target = entry / "SKILL.md"
-            if not target.exists():
-                fail(f"{layer}/{name}/SKILL.md: does not resolve")
-                continue
-            try:
-                if target.resolve() != skill_md.resolve():
-                    fail(f"{layer}/{name}/SKILL.md: points elsewhere")
-            except OSError:
-                pass
-            if target.is_symlink():
-                continue
+            if target.exists():
+                try:
+                    if target.resolve() != skill_md.resolve():
+                        fail(f"{layer}/{name}/SKILL.md: points elsewhere")
+                except OSError:
+                    pass
+                if target.is_symlink():
+                    continue
+            # Not a symlink (or not resolving): accept a pointer file for Windows checkouts.
             pointer = entry / "symlink.txt"
             if not pointer.is_file():
                 fail(f"{layer}/{name}: not a symlink and no symlink.txt pointer for Windows checkouts")
-            has_files = any(p.is_file() for p in entry.rglob("*"))
-            if not has_files:
-                fail(f"{layer}/{name}: compat entry contains no files")
+                continue
+            if "skills/migration-guard" not in pointer.read_text(encoding="utf-8"):
+                fail(f"{layer}/{name}/symlink.txt: does not name the source skill")
 
 
 def check_cases() -> None:
@@ -295,8 +295,12 @@ def check_expected(cid: str, case_dir: Path, ej: Path) -> None:
         fail(f"{rel}: kind must be positive or negative")
     if e.get("kind") == "negative" and verdict != "APPROVED":
         fail(f"{rel}: negative cases must expect APPROVED")
-    if not isinstance(e.get("destructive"), bool):
-        fail(f"{rel}: destructive must be boolean")
+    # `irreversible` is the current field; `destructive` is the deprecated alias and must agree with it.
+    irreversible = e.get("irreversible", e.get("destructive"))
+    if not isinstance(irreversible, bool):
+        fail(f"{rel}: irreversible must be boolean")
+    if "destructive" in e and e["destructive"] != irreversible:
+        fail(f"{rel}: destructive and irreversible disagree")
 
     findings = e.get("required_findings", [])
     if not findings:
@@ -314,7 +318,15 @@ def check_expected(cid: str, case_dir: Path, ej: Path) -> None:
             fail(f"{rel}: {fid} critical must be true only for BLOCKER")
         has_blocker |= rf.get("severity") == "BLOCKER"
         has_high_med |= rf.get("severity") in ("HIGH", "MEDIUM")
-        approval |= bool(rf.get("requires_human_approval"))
+        approval_class = rf.get("approval")
+        if approval_class is not None and approval_class not in APPROVAL_CLASSES:
+            fail(f"{rel}: {fid} invalid approval {approval_class!r}")
+        if approval_class == "accept-risk" or rf.get("requires_human_approval"):
+            approval = True
+        if approval_class == "none" and rf.get("reversible") is False:
+            fail(f"{rel}: {fid} approval 'none' contradicts reversible=false")
+        if rf.get("reversible") is False and approval_class in (None, "none") and not rf.get("requires_human_approval"):
+            fail(f"{rel}: {fid} irreversible step needs an approval class of 'schedule' or 'accept-risk'")
         for p in rf.get("must_cite_evidence", []):
             path = p.split(":")[0]
             if path and not (case_dir / path).is_file():
@@ -325,8 +337,8 @@ def check_expected(cid: str, case_dir: Path, ej: Path) -> None:
     expected_verdict_from_findings = "BLOCKED" if has_blocker else ("CONDITIONAL" if has_high_med else "APPROVED")
     if verdict != expected_verdict_from_findings:
         fail(f"{rel}: verdict {verdict} contradicts findings (expected {expected_verdict_from_findings})")
-    if e.get("destructive") and not approval:
-        fail(f"{rel}: destructive case needs a finding with requires_human_approval")
+    if irreversible and not approval:
+        fail(f"{rel}: irreversible case needs a finding with approval 'accept-risk' (or requires_human_approval)")
 
     for fb in e.get("forbidden_findings", []):
         if not fb.get("category"):
