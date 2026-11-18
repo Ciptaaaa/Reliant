@@ -26,11 +26,12 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 
 # case id -> expected outcome of applying migration.sql
 MUST_FAIL = {
     "PG-001": "applies cleanly (SQL is valid; the risk is compatibility, not execution)",
-    "PG-002": "column contains null values",
+    "PG-002": "contains null values",
     "PG-003": "could not create unique index",
     "PG-004": "violates foreign key constraint",
     "PG-005": "out of range",
@@ -103,20 +104,65 @@ def case_dir(root: Path, case_id: str) -> Path:
     return hits[0]
 
 
+def _schema_name(case_id: str) -> str:
+    """A safe, unique schema/database name for one case."""
+    return "case_" + case_id.lower().replace("-", "_")
+
+
 def check_postgres(root: Path, conn: str, case_id: str) -> bool:
     d = case_dir(root, case_id)
     schema = (d / "schema.sql").read_text(encoding="utf-8")
     migration = (d / "migration.sql").read_text(encoding="utf-8")
     seed = "\n".join(SEED.get(case_id, []))
     prelude = PRELUDE.get(case_id) or ""
-    setup = f"BEGIN;\n{prelude}\n{schema}\n{seed}\nCOMMIT;\n"
+    namespace = _schema_name(case_id)
+
+    # Each case gets its own schema. Without this, the second case to define `users` or `orders` failed
+    # setup with `relation already exists`, which is a harness defect, not a fixture defect.
+    # `citext` is an extension, not a built-in type (PG-001 declares `email citext`), so it must exist
+    # before the schema is applied; the extension is installed once and left in place.
+    bootstrap = (
+        f"CREATE EXTENSION IF NOT EXISTS citext;\n"
+        f"DROP SCHEMA IF EXISTS {namespace} CASCADE;\n"
+        f"CREATE SCHEMA {namespace};\n"
+        f"SET search_path TO {namespace};\n"
+    )
+    setup = f"{bootstrap}BEGIN;\n{prelude}\n{schema}\n{seed}\nCOMMIT;\n"
     code, out = run(["psql", conn, "-v", "ON_ERROR_STOP=1", "-q", "-f", "-"], setup)
     if code != 0:
         print(f"[{case_id}] SETUP FAILED\n{out}")
         return False
-    # Run the migration in its own transaction so a failure does not leave state behind.
-    code, out = run(["psql", conn, "-v", "ON_ERROR_STOP=1", "-q", "-c", f"BEGIN; {migration} COMMIT;"], "")
-    return evaluate(case_id, code, out)
+    # Run the migration in its own transaction, inside the same schema, so a failure does not leave
+    # state behind and does not touch another case.
+    script = f"SET search_path TO {namespace};\nBEGIN;\n{migration}\nCOMMIT;\n"
+    code, out = run(["psql", conn, "-v", "ON_ERROR_STOP=1", "-q", "-f", "-"], script)
+    result = evaluate(case_id, code, out)
+    # Clean up so a rerun starts from nothing.
+    run(["psql", conn, "-v", "ON_ERROR_STOP=1", "-q", "-c", f"DROP SCHEMA IF EXISTS {namespace} CASCADE;"], "")
+    return result
+
+
+def mysql_args(conn: str, database: str | None = "") -> list[str]:
+    """Turn a mysql:// URI into the flags the `mysql` client understands.
+
+    `mysql "mysql://user:pw@host:port/db"` is not a supported form: the client treats the whole string
+    as a database name and falls back to the local socket, which is how every MY case failed with
+    "Can't connect to local server through socket" while the server was reachable over TCP.
+    """
+    parsed = urlparse(conn)
+    if parsed.scheme not in ("mysql", "mariadb"):
+        raise SystemExit(f"--mysql expects a mysql:// URI, got {conn!r}")
+    args = ["mysql", f"--host={parsed.hostname or '127.0.0.1'}", f"--port={parsed.port or 3306}"]
+    if parsed.username:
+        args.append(f"--user={parsed.username}")
+    if parsed.password:
+        args.append(f"--password={parsed.password}")
+    # `database=""` keeps the URI value; `None` connects with no database selected, which the
+    # admin statements (CREATE/DROP DATABASE) need.
+    db = (parsed.path or "/").lstrip("/") if database == "" else database
+    if db:
+        args.append(f"--database={db}")
+    return args
 
 
 def check_mysql(root: Path, conn: str, case_id: str) -> bool:
@@ -124,12 +170,23 @@ def check_mysql(root: Path, conn: str, case_id: str) -> bool:
     schema = (d / "schema.sql").read_text(encoding="utf-8")
     migration = (d / "migration.sql").read_text(encoding="utf-8")
     seed = "\n".join(SEED.get(case_id, []))
-    code, out = run(["mysql", conn], f"{schema}\n{seed}\n")
+    namespace = _schema_name(case_id)
+
+    # One database per case, for the same reason PostgreSQL gets one schema per case.
+    admin = mysql_args(conn, database=None)
+    code, out = run(admin, f"DROP DATABASE IF EXISTS {namespace}; CREATE DATABASE {namespace};\n")
+    if code != 0:
+        print(f"[{case_id}] NAMESPACE FAILED\n{out}")
+        return False
+    args = mysql_args(conn, database=namespace)
+    code, out = run(args, f"{schema}\n{seed}\n")
     if code != 0:
         print(f"[{case_id}] SETUP FAILED\n{out}")
         return False
-    code, out = run(["mysql", conn], migration)
-    return evaluate(case_id, code, out)
+    code, out = run(args, migration)
+    result = evaluate(case_id, code, out)
+    run(admin, f"DROP DATABASE IF EXISTS {namespace};\n")
+    return result
 
 
 def evaluate(case_id: str, code: int, out: str) -> bool:

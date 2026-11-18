@@ -3,10 +3,25 @@ This is a pointer file for checkouts where the directory link was not preserved
 
 Target: skills/migration-guard
 
-To restore a working skill directory, delete this folder and create a link from the repo root:
-  Windows (cmd):    mklink /J .agents\\skills\\migration-guard skills\\migration-guard
-  PowerShell:       New-Item -ItemType Junction -Path .agents\\skills\\migration-guard -Target skills\\migration-guard
-  macOS / Linux:    ln -s ../../skills/migration-guard .agents/skills/migration-guard
+The pointer directory must be removed before the link can be created: `ln -s`, `mklink` and
+`New-Item -ItemType Junction` all refuse to write over an existing directory. From the repository root:
 
-A working skill is the link, not this file. The repository validator and the test suite do not
-need this layer; it only lets an agent product auto-discover the skill.
+  Windows (cmd):
+      rmdir /S /Q .agents/skills/migration-guard
+      mklink /J .agents/skills/migration-guard skills\migration-guard
+
+  PowerShell:
+      Remove-Item -Recurse -Force .agents/skills/migration-guard
+      New-Item -ItemType Junction -Path .agents/skills/migration-guard -Target skills\migration-guard
+
+  macOS / Linux:
+      rm -rf .agents/skills/migration-guard
+      ln -s ../../skills/migration-guard .agents/skills/migration-guard
+
+Verify: .agents/skills/migration-guard/SKILL.md must exist afterwards. `python scripts/validate_repo.py` warns while this
+pointer file is present and stops warning once the link exists.
+
+Do not copy `skills/migration-guard` here instead: git would store the skill twice and the copies drift.
+
+The repository validator and the test suite do not need this layer; it only lets an agent product
+auto-discover the skill.

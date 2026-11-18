@@ -28,13 +28,45 @@ jobs:
       - name: Validate repository
         run: python scripts/validate_repo.py
 
-      - name: Score every recorded eval iteration
-        if: hashFiles('evals/results/*/') != ''
+      - name: Scorer and linter regression tests
+        # Pins the defects found by review: the destructive-policy denominator, bare-filename evidence,
+        # long-gap negated approvals, the format order check, and linter/scorer agreement.
+        run: python scripts/test_scoring.py
+
+      - name: Lint the shipped report examples against the contract
         run: |
+          # The conforming example must pass and the rejected example must fail. GitHub runs `run:` with
+          # `bash -e`, where a leading `!` is the intended way to invert a status without tripping -e.
+          python scripts/linter_report.py skills/migration-guard/examples/good-report.report.md
+          ! python scripts/linter_report.py skills/migration-guard/examples/bad-report.report.md
+
+      - name: Lint every recorded eval report (report only)
+        # Not a gate: iterations 1-2 are committed history and score 0% format on purpose - that is the
+        # evidence of the defect the contract was built to fix. Linting them here makes the number
+        # visible and reproducible without pretending the past passed.
+        #
+        # No `if:` guard: hashFiles() matches files, not directories, so `hashFiles('evals/results/*/')`
+        # is always empty and silently skipped these steps. The loops below are no-ops when nothing
+        # matches, which is the guard they actually need.
+        continue-on-error: true
+        run: |
+          shopt -s nullglob
           for dir in evals/results/*/; do
-            echo "::group::evaluate $dir"
+            echo "::group::lint $dir"
+            python scripts/linter_report.py --reports "$dir"
+            echo "::endgroup::"
+          done
+
+      - name: Score every recorded eval iteration
+        # Reporting only (--report-only), and the scorecard is written outside the checkout so a stale
+        # committed scorecard cannot be silently replaced by the runner.
+        run: |
+          shopt -s nullglob
+          for dir in evals/results/*/; do
+            name="$(basename "$dir")"
+            echo "::group::evaluate $name"
             python scripts/evaluate_reports.py --reports "$dir" --report-only \
-              --json "$dir/scorecard.json"
+              --json "$RUNNER_TEMP/scorecard-$name.json"
             echo "::endgroup::"
           done
 
@@ -88,7 +120,7 @@ jobs:
           MYSQL_DATABASE: fixture
         ports: ["3306:3306"]
         options: >-
-          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -pfixture"
+          --health-cmd "mysqladmin ping --host=127.0.0.1 --protocol=TCP -uroot -pfixture"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 20
