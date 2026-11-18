@@ -4,6 +4,18 @@ Normative reference for Migration Guard. When this file and a general intuition 
 wins. When this file and official engine documentation disagree, the documentation wins and this
 file should be fixed.
 
+**Severity is not the whole answer.** Three questions are answered separately for every finding:
+
+| Question | Answered by | Contract |
+|---|---|---|
+| How bad is it if this ships as written? | severity (`BLOCKER`…`INFO`) | this file |
+| Can the previous state be restored, and was data lost? | reversibility + data loss + approval class | [`change-impact-taxonomy.md`](change-impact-taxonomy.md) |
+| What does it cost while it runs or deploys? | operational risk (lock, rewrite, backfill, deploy-order) | [`change-impact-taxonomy.md`](change-impact-taxonomy.md) §2.5 |
+
+A `BLOCKER` can require **no** human approval (a constraint that is certain to be refused loses no
+data), and a `HIGH` deploy-order problem can require **no** acceptance of risk either. Read
+`change-impact-taxonomy.md` §3 before assigning an approval class; severity alone cannot decide it.
+
 Engine-specific claims in this file are kept deliberately narrow. The authoritative detail lives in
 `postgres.md` and `mysql.md`, which cite the documentation.
 
@@ -83,7 +95,11 @@ An `INFO` finding is **not** a finding of risk. It does not affect the verdict.
 For each statement in the migration:
 
 1. **Classify the operation.** Additive (creates something new), modifying (changes something
-   existing), destructive (removes or changes data).
+   existing), destructive (removes or changes data). Use the five-term vocabulary in
+   [`change-impact-taxonomy.md`](change-impact-taxonomy.md) §2.2 when it matters — additive /
+   restrictive / narrowing / transformative / removing — because "destructive" here is a shorthand that
+   hides whether a statement is refused or applied. A `restrictive` statement (a constraint) is
+   destructive in the everyday sense and loses nothing when the engine refuses it.
 2. **Check evidence of breakage.** Is any affected object referenced by running code or a running
    older schema? Evidence found → `BLOCKER`.
 3. **Check data correctness.** Does the change assume a data property (nullability, uniqueness,
@@ -98,6 +114,10 @@ For each statement in the migration:
    unknown table size → `HIGH`.
 5. **Check recoverability.** Is the change reversible in schema **and** data? Schema reversible but
    data lost → still at least `HIGH`; completely irreversible without backup → `BLOCKER`.
+   Use [`change-impact-taxonomy.md`](change-impact-taxonomy.md) §2.3–§2.4: a statement that is
+   **refused** (certain to fail and roll back) is always reversible and loses no data, so it never
+   requires `accept-risk` — but it is still a `BLOCKER` when the refusal is certain, because the deploy
+   fails. `RENAME` is reversible: the values move, they are not lost.
 6. **Cap by evidence quality.** "Unknown" is not "safe", but it is also not "proven". An unknown raises
    the severity to `HIGH` and keeps the verdict at `CONDITIONAL`; it only becomes `BLOCKER` when
    evidence shows the consequence is real.
