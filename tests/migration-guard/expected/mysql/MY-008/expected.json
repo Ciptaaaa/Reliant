@@ -4,27 +4,53 @@
   "kind": "positive",
   "title": "Rename column with application compatibility problem",
   "expected_verdict": "CONDITIONAL",
-  "allowed_verdicts": ["CONDITIONAL"],
-  "destructive": true,
+  "allowed_verdicts": [
+    "CONDITIONAL"
+  ],
   "required_findings": [
     {
       "id": "F1",
       "severity": "HIGH",
       "critical": false,
       "category": "rename",
-      "must_cite_evidence": ["application-usage.md", "migration.sql", "context.md"],
-      "must_mention_any": ["old version", "rolling", "does not exist", "break", "cron", "scheduler", "sms"],
-      "mitigation_must_mention_any": ["add column", "add new column", "expand", "both"],
-      "requires_human_approval": true
+      "must_cite_evidence": [
+        "application-usage.md",
+        "migration.sql",
+        "context.md"
+      ],
+      "must_mention_any": [
+        "old version",
+        "rolling",
+        "does not exist",
+        "break",
+        "cron",
+        "scheduler",
+        "sms"
+      ],
+      "mitigation_must_mention_any": [
+        "add column",
+        "add new column",
+        "expand",
+        "both"
+      ],
+      "approval": "accept-risk",
+      "reversible": true
     },
     {
       "id": "F2",
       "severity": "LOW",
       "critical": false,
       "category": "lock-and-rewrite",
-      "must_cite_evidence": ["migration.sql"],
-      "must_mention_any": ["instant", "metadata", "ACCESS EXCLUSIVE"],
-      "requires_human_approval": false
+      "must_cite_evidence": [
+        "migration.sql"
+      ],
+      "must_mention_any": [
+        "instant",
+        "metadata",
+        "ACCESS EXCLUSIVE"
+      ],
+      "approval": "none",
+      "reversible": true
     }
   ],
   "forbidden_findings": [
@@ -34,7 +60,15 @@
       "reason": "RENAME does not lose data."
     }
   ],
-  "required_unknowns": ["deploy", "mobile"],
-  "required_report_sections": ["scope", "verdict", "findings"],
-  "notes": "A report that additionally flags the CHANGE COLUMN full-definition trap or API JSON field change is a bonus."
+  "required_unknowns": [
+    "deploy",
+    "mobile"
+  ],
+  "required_report_sections": [
+    "scope",
+    "verdict",
+    "findings"
+  ],
+  "notes": "A report that additionally flags the CHANGE COLUMN full-definition trap or API JSON field change is a bonus. A RENAME is reversible for the schema but the planned follow-up DROP COLUMN is not; approval is accept-risk for that step, not for the rename itself.",
+  "irreversible": false
 }

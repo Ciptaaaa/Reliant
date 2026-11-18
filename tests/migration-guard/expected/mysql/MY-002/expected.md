@@ -64,6 +64,8 @@ a broken cron job.
 `MethodBreakdown.php:19` already uses `COALESCE(method,'unknown')`, so `'unknown'` is an acceptable
 backfill value and reporting does not need to change.
 
+**Approval: schedule (F2)** — reversible, but needs a window, throttle, and abort conditions.
+
 ## Unknowns that must be reported
 
 - Whether `ImportLegacyPayments` runs during the deploy window (out-of-band scheduler) is unknown.

@@ -31,7 +31,7 @@ exporting), keep dual-read if needed, then drop in a later release after one ful
 The nightly export and the CRM integration (`docs/integrations/crm-sync.md:8`) must be migrated to a
 replacement field *before* the drop.
 
-**Human approval required:** yes. The drop is irreversible and destroys ~240,000 phone numbers.
+**Approval: accept-risk (F1)** — a human accepts the loss of the old values; a recovery plan and restore point are required.
 
 ### F2 — `HIGH` — `data-integrity` — data loss with no in-place recovery
 
@@ -45,7 +45,7 @@ unrelated tables to the backup point.
 **Mitigation:** if the drop must proceed, export the phone column to an archival location and record
 the export before deploying; state the restore point and RPO in the report.
 
-**Human approval required:** yes.
+**Approval: accept-risk (F1)** — a human accepts the loss of the old values; a recovery plan and restore point are required.
 
 ### F3 — `MEDIUM` — `lock-and-rewrite` — `ACCESS EXCLUSIVE` lock and blocking deploy wait
 

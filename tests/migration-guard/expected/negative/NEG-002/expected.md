@@ -25,6 +25,8 @@ If a build fails partway it leaves an invalid index that must be dropped and reb
 `app/orders/views.py:41` filters by `customer_id` and orders by `placed_at`; the composite index matches
 that access pattern. No data, constraint, or existing index is touched. Old and new code both work.
 
+**Approval: none** — every step in this migration is reversible without a backup.
+
 ## Unknowns that must be reported
 
 - Long-running reporting transactions could delay the build but do not block writes (optional note).

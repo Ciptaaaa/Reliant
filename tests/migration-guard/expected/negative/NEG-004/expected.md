@@ -26,6 +26,8 @@ The column is added with a default and is `NOT NULL`, so inserts from the curren
 constraint is added. The literal `'USD'` is non-volatile (not `now()`/`random()`), which is what makes the
 fast path apply.
 
+**Approval: none** — every step in this migration is reversible without a backup.
+
 ## Unknowns that must be reported
 
 - None material. The check constraint or backfill for non-USD invoices is a later change.

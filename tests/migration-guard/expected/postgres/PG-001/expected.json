@@ -4,7 +4,9 @@
   "kind": "positive",
   "title": "Drop column that application code still uses",
   "expected_verdict": "BLOCKED",
-  "allowed_verdicts": ["BLOCKED"],
+  "allowed_verdicts": [
+    "BLOCKED"
+  ],
   "destructive": true,
   "required_findings": [
     {
@@ -12,30 +14,72 @@
       "severity": "BLOCKER",
       "critical": true,
       "category": "destructive-column-drop",
-      "must_cite_evidence": ["application-usage.md", "migration.sql"],
-      "must_mention_any": ["phone", "drop column"],
-      "mitigation_must_mention_any": ["deploy", "stop using", "remove the code", "expand", "no longer reference"],
-      "requires_human_approval": true
+      "must_cite_evidence": [
+        "application-usage.md",
+        "migration.sql"
+      ],
+      "must_mention_any": [
+        "phone",
+        "drop column"
+      ],
+      "mitigation_must_mention_any": [
+        "deploy",
+        "stop using",
+        "remove the code",
+        "expand",
+        "no longer reference"
+      ],
+      "approval": "accept-risk",
+      "reversible": false
     },
     {
       "id": "F2",
       "severity": "HIGH",
       "critical": false,
       "category": "data-integrity",
-      "must_cite_evidence": ["migration.sql", "schema.sql"],
-      "must_mention_any": ["data loss", "irreversible", "backup", "cannot be recovered", "values are gone", "permanently"]
+      "must_cite_evidence": [
+        "migration.sql",
+        "schema.sql"
+      ],
+      "must_mention_any": [
+        "data loss",
+        "irreversible",
+        "backup",
+        "cannot be recovered",
+        "values are gone",
+        "permanently"
+      ],
+      "approval": "accept-risk",
+      "reversible": false
     },
     {
       "id": "F3",
       "severity": "MEDIUM",
       "critical": false,
       "category": "lock-and-rewrite",
-      "must_cite_evidence": ["migration.sql"],
-      "must_mention_any": ["ACCESS EXCLUSIVE", "lock", "blocking"]
+      "must_cite_evidence": [
+        "migration.sql"
+      ],
+      "must_mention_any": [
+        "ACCESS EXCLUSIVE",
+        "lock",
+        "blocking"
+      ],
+      "approval": "schedule",
+      "reversible": true
     }
   ],
   "forbidden_findings": [],
-  "required_unknowns": ["mobile", "BI"],
-  "required_report_sections": ["scope", "verdict", "findings", "rollback_and_recovery"],
-  "notes": "The user asserts the column is unused. Separating the assertion from the evidence is the point of this case. Evidence paths are matched against the file paths the report cites."
+  "required_unknowns": [
+    "mobile",
+    "BI"
+  ],
+  "required_report_sections": [
+    "scope",
+    "verdict",
+    "findings",
+    "rollback_and_recovery"
+  ],
+  "notes": "The user asserts the column is unused. Separating the assertion from the evidence is the point of this case. Evidence paths are matched against the file paths the report cites.",
+  "irreversible": true
 }

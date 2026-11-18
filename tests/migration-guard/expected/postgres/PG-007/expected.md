@@ -20,7 +20,7 @@ transactions on `users`, the practical impact is negligible.
 
 **Mitigation:** none required. Optional hardening: `SET lock_timeout = '3s'` in the migration session.
 
-**Human approval required:** no.
+**Approval: none** — every step in this migration is reversible without a backup.
 
 ### F2 — `LOW` — `application-compatibility` — old and new versions both work
 

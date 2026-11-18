@@ -25,7 +25,7 @@ failing until a new image removes the reference.
 **Mitigation:** stop all reads/writes and migrate the ERP export to a replacement field in a release
 first; then drop in a separate migration after one full deploy cycle.
 
-**Human approval required:** yes — dropping the column destroys ~3,100 phone numbers with no in-place
+**Approval: accept-risk (F1)** — a human accepts the loss of the old values; a recovery plan and restore point are required.
 recovery.
 
 ### F2 — `HIGH` — `data-integrity` — irreversible data loss on MySQL
@@ -40,7 +40,7 @@ point-in-time restore to a separate instance, which reverts unrelated tables to 
 **Mitigation:** export `contact_phone` to an archive table or file inside the same change window if the
 data must be preserved; otherwise record the restore point explicitly.
 
-**Human approval required:** yes.
+**Approval: accept-risk (F1)** — a human accepts the loss of the old values; a recovery plan and restore point are required.
 
 ### F3 — `INFO` — `no-risk-observed` — lock and table size
 

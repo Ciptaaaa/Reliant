@@ -4,7 +4,9 @@
   "kind": "positive",
   "title": "Add nullable column (safe)",
   "expected_verdict": "APPROVED",
-  "allowed_verdicts": ["APPROVED"],
+  "allowed_verdicts": [
+    "APPROVED"
+  ],
   "destructive": false,
   "required_findings": [
     {
@@ -12,9 +14,19 @@
       "severity": "LOW",
       "critical": false,
       "category": "operational",
-      "must_cite_evidence": ["migration.sql", "schema.sql"],
-      "must_mention_any": ["metadata", "no rewrite", "not rewrite", "does not rewrite", "fast"],
-      "requires_human_approval": false
+      "must_cite_evidence": [
+        "migration.sql",
+        "schema.sql"
+      ],
+      "must_mention_any": [
+        "metadata",
+        "no rewrite",
+        "not rewrite",
+        "does not rewrite",
+        "fast"
+      ],
+      "approval": "none",
+      "reversible": true
     }
   ],
   "forbidden_findings": [
@@ -30,6 +42,11 @@
     }
   ],
   "required_unknowns": [],
-  "required_report_sections": ["scope", "verdict", "findings"],
-  "notes": "The core assertion is the APPROVED verdict plus a LOW finding that explains the metadata-only add. Reporting the momentary ACCESS EXCLUSIVE as a LOW is acceptable; reporting any rewrite or data risk is a false positive."
+  "required_report_sections": [
+    "scope",
+    "verdict",
+    "findings"
+  ],
+  "notes": "The core assertion is the APPROVED verdict plus a LOW finding that explains the metadata-only add. Reporting the momentary ACCESS EXCLUSIVE as a LOW is acceptable; reporting any rewrite or data risk is a false positive.",
+  "irreversible": false
 }

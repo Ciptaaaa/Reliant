@@ -23,7 +23,7 @@ became unsupported, MySQL would **reject** the statement instead of silently reb
 **Mitigation:** none required. As a safeguard on managed databases, run with a short
 `lock_wait_timeout` so a busy moment fails fast.
 
-**Human approval required:** no.
+**Approval: none** — every step in this migration is reversible without a backup.
 
 ### F2 — `INFO` — `no-risk-observed` — compatibility and data
 

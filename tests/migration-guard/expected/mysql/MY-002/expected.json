@@ -4,7 +4,9 @@
   "kind": "positive",
   "title": "NOT NULL while NULL rows exist",
   "expected_verdict": "CONDITIONAL",
-  "allowed_verdicts": ["CONDITIONAL"],
+  "allowed_verdicts": [
+    "CONDITIONAL"
+  ],
   "destructive": false,
   "required_findings": [
     {
@@ -12,27 +14,68 @@
       "severity": "HIGH",
       "critical": false,
       "category": "not-null-add",
-      "must_cite_evidence": ["schema.sql", "migration.sql"],
-      "must_mention_any": ["84,302", "84302", "null", "1138", "invalid use of null", "fail"],
-      "mitigation_must_mention_any": ["backfill", "before", "update"],
-      "requires_human_approval": false
+      "must_cite_evidence": [
+        "schema.sql",
+        "migration.sql"
+      ],
+      "must_mention_any": [
+        "84,302",
+        "84302",
+        "null",
+        "1138",
+        "invalid use of null",
+        "fail"
+      ],
+      "mitigation_must_mention_any": [
+        "backfill",
+        "before",
+        "update"
+      ],
+      "approval": "none",
+      "reversible": true
     },
     {
       "id": "F2",
       "severity": "HIGH",
       "critical": false,
       "category": "lock-and-rewrite",
-      "must_cite_evidence": ["migration.sql"],
-      "must_mention_any": ["ALGORITHM", "INPLACE", "COPY", "LOCK", "rebuild", "metadata lock", "MDL"],
-      "mitigation_must_mention_any": ["ALGORITHM", "LOCK=SHARED", "window", "staging"]
+      "must_cite_evidence": [
+        "migration.sql"
+      ],
+      "must_mention_any": [
+        "ALGORITHM",
+        "INPLACE",
+        "COPY",
+        "LOCK",
+        "rebuild",
+        "metadata lock",
+        "MDL"
+      ],
+      "mitigation_must_mention_any": [
+        "ALGORITHM",
+        "LOCK=SHARED",
+        "window",
+        "staging"
+      ],
+      "approval": "schedule",
+      "reversible": true
     },
     {
       "id": "F3",
       "severity": "MEDIUM",
       "critical": false,
       "category": "application-compatibility",
-      "must_cite_evidence": ["application-usage.md"],
-      "must_mention_any": ["ImportLegacyPayments", "importer", "legacy", "bulk insert"]
+      "must_cite_evidence": [
+        "application-usage.md"
+      ],
+      "must_mention_any": [
+        "ImportLegacyPayments",
+        "importer",
+        "legacy",
+        "bulk insert"
+      ],
+      "approval": "none",
+      "reversible": true
     }
   ],
   "forbidden_findings": [
@@ -42,7 +85,16 @@
       "reason": "No column is dropped."
     }
   ],
-  "required_unknowns": ["importer", "lag", "window"],
-  "required_report_sections": ["scope", "verdict", "findings"],
-  "notes": "If the agent claims MODIFY COLUMN to NOT NULL is guaranteed INSTANT on 8.0, that is a technical error; treat as a miss of F2's mechanism only if it also fails to mention algorithm/lock."
+  "required_unknowns": [
+    "importer",
+    "lag",
+    "window"
+  ],
+  "required_report_sections": [
+    "scope",
+    "verdict",
+    "findings"
+  ],
+  "notes": "If the agent claims MODIFY COLUMN to NOT NULL is guaranteed INSTANT on 8.0, that is a technical error; treat as a miss of F2's mechanism only if it also fails to mention algorithm/lock.",
+  "irreversible": false
 }

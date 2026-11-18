@@ -58,6 +58,8 @@ The backfill itself (`UPDATE orders SET status = 'pending' WHERE status IS NULL`
 is additive and reversible (the original value was `NULL`); it does not change the column type or
 drop data.
 
+**Approval: schedule (F3)** — reversible, but needs a window, throttle, and abort conditions.
+
 ## Unknowns that must be reported
 
 - The fulfilment worker version is not known; if it is older than the API it may still write `NULL`

@@ -4,7 +4,9 @@
   "kind": "positive",
   "title": "Foreign key with orphan records",
   "expected_verdict": "BLOCKED",
-  "allowed_verdicts": ["BLOCKED"],
+  "allowed_verdicts": [
+    "BLOCKED"
+  ],
   "destructive": true,
   "required_findings": [
     {
@@ -12,32 +14,89 @@
       "severity": "BLOCKER",
       "critical": true,
       "category": "foreign-key",
-      "must_cite_evidence": ["schema.sql", "migration.sql"],
-      "must_mention_any": ["orphan", "47,308", "47308", "1452", "foreign key constraint fails"],
-      "mitigation_must_mention_any": ["backfill", "relink", "resolve", "clean", "move"],
-      "requires_human_approval": true
+      "must_cite_evidence": [
+        "schema.sql",
+        "migration.sql"
+      ],
+      "must_mention_any": [
+        "orphan",
+        "47,308",
+        "47308",
+        "1452",
+        "foreign key constraint fails"
+      ],
+      "mitigation_must_mention_any": [
+        "backfill",
+        "relink",
+        "resolve",
+        "clean",
+        "move"
+      ],
+      "approval": "accept-risk",
+      "reversible": false
     },
     {
       "id": "F2",
       "severity": "HIGH",
       "critical": false,
       "category": "application-compatibility",
-      "must_cite_evidence": ["application-usage.md"],
-      "must_mention_any": ["archive", "delete", "RESTRICT", "1451", "cascade"],
-      "mitigation_must_mention_any": ["ArchiveOldOrders", "transaction", "ON DELETE", "cascade", "RESTRICT"]
+      "must_cite_evidence": [
+        "application-usage.md"
+      ],
+      "must_mention_any": [
+        "archive",
+        "delete",
+        "RESTRICT",
+        "1451",
+        "cascade"
+      ],
+      "mitigation_must_mention_any": [
+        "ArchiveOldOrders",
+        "transaction",
+        "ON DELETE",
+        "cascade",
+        "RESTRICT"
+      ],
+      "approval": "schedule",
+      "reversible": true
     },
     {
       "id": "F3",
       "severity": "HIGH",
       "critical": false,
       "category": "lock-and-rewrite",
-      "must_cite_evidence": ["migration.sql", "schema.sql"],
-      "must_mention_any": ["COPY", "foreign_key_checks", "rebuild", "block"],
-      "mitigation_must_mention_any": ["staging", "window", "measure", "COPY", "online"]
+      "must_cite_evidence": [
+        "migration.sql",
+        "schema.sql"
+      ],
+      "must_mention_any": [
+        "COPY",
+        "foreign_key_checks",
+        "rebuild",
+        "block"
+      ],
+      "mitigation_must_mention_any": [
+        "staging",
+        "window",
+        "measure",
+        "COPY",
+        "online"
+      ],
+      "approval": "schedule",
+      "reversible": true
     }
   ],
   "forbidden_findings": [],
-  "required_unknowns": ["settlement", "archive", "staging"],
-  "required_report_sections": ["scope", "verdict", "findings"],
-  "notes": "The unique depth marker is realising ADD FOREIGN KEY is COPY-only unless foreign_key_checks=0. Claiming it runs online is the failure this fixture guards against."
+  "required_unknowns": [
+    "settlement",
+    "archive",
+    "staging"
+  ],
+  "required_report_sections": [
+    "scope",
+    "verdict",
+    "findings"
+  ],
+  "notes": "The unique depth marker is realising ADD FOREIGN KEY is COPY-only unless foreign_key_checks=0. Claiming it runs online is the failure this fixture guards against.",
+  "irreversible": true
 }

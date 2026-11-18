@@ -33,7 +33,7 @@ lossy `USING` without a decision record.
    or use the add-new-column + dual-write + backfill + swap (expand and contract) so the rewrite
    happens in batches.
 
-**Human approval required:** yes — any resolution of the 3,842 rows changes stored data.
+**Approval: accept-risk (F1)** — a human accepts the loss of the old values; a recovery plan and restore point are required.
 
 ### F2 — `HIGH` — `lock-and-rewrite` — full table and index rewrite under `ACCESS EXCLUSIVE`
 

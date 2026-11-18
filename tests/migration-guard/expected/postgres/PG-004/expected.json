@@ -4,7 +4,9 @@
   "kind": "positive",
   "title": "Foreign key with orphan records",
   "expected_verdict": "BLOCKED",
-  "allowed_verdicts": ["BLOCKED"],
+  "allowed_verdicts": [
+    "BLOCKED"
+  ],
   "destructive": true,
   "required_findings": [
     {
@@ -12,31 +14,83 @@
       "severity": "BLOCKER",
       "critical": true,
       "category": "foreign-key",
-      "must_cite_evidence": ["schema.sql", "migration.sql"],
-      "must_mention_any": ["orphan", "22,913", "22913", "foreign key constraint", "violates"],
-      "mitigation_must_mention_any": ["backfill", "re-link", "null", "resolve", "clean"],
-      "requires_human_approval": true
+      "must_cite_evidence": [
+        "schema.sql",
+        "migration.sql"
+      ],
+      "must_mention_any": [
+        "orphan",
+        "22,913",
+        "22913",
+        "foreign key constraint",
+        "violates"
+      ],
+      "mitigation_must_mention_any": [
+        "backfill",
+        "re-link",
+        "null",
+        "resolve",
+        "clean"
+      ],
+      "approval": "accept-risk",
+      "reversible": false
     },
     {
       "id": "F2",
       "severity": "HIGH",
       "critical": false,
       "category": "application-compatibility",
-      "must_cite_evidence": ["application-usage.md", "migration.sql"],
-      "must_mention_any": ["delete", "NO ACTION", "AdminCustomerController", "23503", "restrict", "cascade"],
-      "mitigation_must_mention_any": ["ON DELETE", "cascade", "SET NULL", "soft delete", "RESTRICT"]
+      "must_cite_evidence": [
+        "application-usage.md",
+        "migration.sql"
+      ],
+      "must_mention_any": [
+        "delete",
+        "NO ACTION",
+        "AdminCustomerController",
+        "23503",
+        "restrict",
+        "cascade"
+      ],
+      "mitigation_must_mention_any": [
+        "ON DELETE",
+        "cascade",
+        "SET NULL",
+        "soft delete",
+        "RESTRICT"
+      ],
+      "approval": "schedule",
+      "reversible": true
     },
     {
       "id": "F3",
       "severity": "MEDIUM",
       "critical": false,
       "category": "lock-and-rewrite",
-      "must_cite_evidence": ["migration.sql"],
-      "must_mention_any": ["NOT VALID", "VALIDATE", "scan", "lock"]
+      "must_cite_evidence": [
+        "migration.sql"
+      ],
+      "must_mention_any": [
+        "NOT VALID",
+        "VALIDATE",
+        "scan",
+        "lock"
+      ],
+      "approval": "schedule",
+      "reversible": true
     }
   ],
   "forbidden_findings": [],
-  "required_unknowns": ["orphan", "delete", "semantics"],
-  "required_report_sections": ["scope", "verdict", "findings"],
-  "notes": "Saying NOT VALID alone is safe is the failure this case guards against. Mitigation must include resolving orphans."
+  "required_unknowns": [
+    "orphan",
+    "delete",
+    "semantics"
+  ],
+  "required_report_sections": [
+    "scope",
+    "verdict",
+    "findings"
+  ],
+  "notes": "Saying NOT VALID alone is safe is the failure this case guards against. Mitigation must include resolving orphans.",
+  "irreversible": true
 }

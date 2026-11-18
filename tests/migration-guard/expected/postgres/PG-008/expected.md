@@ -36,7 +36,7 @@ hypothetical.
 If the team insists on a rename, the deploy must stop the world (stop the old version fully, rename,
 start the new version), which must be explicitly approved and has a downtime cost.
 
-**Human approval required:** yes — the eventual `DROP COLUMN phone` is destructive; the rename as
+**Approval: accept-risk (F1)** — a human accepts the loss of the old values; a recovery plan and restore point are required.
 written is a breaking deploy.
 
 ### F2 — `LOW` — `lock-and-rewrite` — instantaneous `ACCESS EXCLUSIVE`

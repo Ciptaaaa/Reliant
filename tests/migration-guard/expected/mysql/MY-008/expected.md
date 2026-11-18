@@ -33,7 +33,7 @@ rolling update finishes. During that window:
 If the team insists on a true rename with zero old readers, it needs a stop-the-world deploy and
 explicit approval.
 
-**Human approval required:** yes — the eventual `DROP COLUMN mobile` is destructive.
+**Approval: accept-risk (F1)** — a human accepts the loss of the old values; a recovery plan and restore point are required.
 
 ### F2 — `LOW` — `lock-and-rewrite` — instant DDL, metadata-only
 

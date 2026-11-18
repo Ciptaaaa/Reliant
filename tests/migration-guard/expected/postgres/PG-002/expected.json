@@ -4,7 +4,9 @@
   "kind": "positive",
   "title": "SET NOT NULL while NULL rows exist",
   "expected_verdict": "CONDITIONAL",
-  "allowed_verdicts": ["CONDITIONAL"],
+  "allowed_verdicts": [
+    "CONDITIONAL"
+  ],
   "destructive": false,
   "required_findings": [
     {
@@ -12,30 +14,70 @@
       "severity": "HIGH",
       "critical": false,
       "category": "not-null-add",
-      "must_cite_evidence": ["schema.sql", "migration.sql"],
-      "must_mention_any": ["36,117", "36117", "null", "fail"],
-      "mitigation_must_mention_any": ["NOT VALID", "VALIDATE", "backfill", "check constraint"],
-      "requires_human_approval": false
+      "must_cite_evidence": [
+        "schema.sql",
+        "migration.sql"
+      ],
+      "must_mention_any": [
+        "36,117",
+        "36117",
+        "null",
+        "fail"
+      ],
+      "mitigation_must_mention_any": [
+        "NOT VALID",
+        "VALIDATE",
+        "backfill",
+        "check constraint"
+      ],
+      "approval": "none",
+      "reversible": true
     },
     {
       "id": "F2",
       "severity": "MEDIUM",
       "critical": false,
       "category": "application-compatibility",
-      "must_cite_evidence": ["application-usage.md"],
-      "must_mention_any": ["create.ts", "insert", "null", "writer", "legacy"]
+      "must_cite_evidence": [
+        "application-usage.md"
+      ],
+      "must_mention_any": [
+        "create.ts",
+        "insert",
+        "null",
+        "writer",
+        "legacy"
+      ],
+      "approval": "none",
+      "reversible": true
     },
     {
       "id": "F3",
       "severity": "MEDIUM",
       "critical": false,
       "category": "lock-and-rewrite",
-      "must_cite_evidence": ["migration.sql"],
-      "must_mention_any": ["ACCESS EXCLUSIVE", "scan", "lock"]
+      "must_cite_evidence": [
+        "migration.sql"
+      ],
+      "must_mention_any": [
+        "ACCESS EXCLUSIVE",
+        "scan",
+        "lock"
+      ],
+      "approval": "schedule",
+      "reversible": true
     }
   ],
   "forbidden_findings": [],
-  "required_unknowns": ["fulfilment", "backfill value"],
-  "required_report_sections": ["scope", "verdict", "findings"],
-  "notes": "F3 may be merged into F1 by a good report; the evaluator looks for the lock/scan concept anywhere in the findings."
+  "required_unknowns": [
+    "fulfilment",
+    "backfill value"
+  ],
+  "required_report_sections": [
+    "scope",
+    "verdict",
+    "findings"
+  ],
+  "notes": "F3 may be merged into F1 by a good report; the evaluator looks for the lock/scan concept anywhere in the findings.",
+  "irreversible": false
 }

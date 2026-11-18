@@ -4,7 +4,9 @@
   "kind": "positive",
   "title": "UNIQUE constraint with duplicate rows",
   "expected_verdict": "BLOCKED",
-  "allowed_verdicts": ["BLOCKED"],
+  "allowed_verdicts": [
+    "BLOCKED"
+  ],
   "destructive": true,
   "required_findings": [
     {
@@ -12,31 +14,74 @@
       "severity": "BLOCKER",
       "critical": true,
       "category": "unique-constraint",
-      "must_cite_evidence": ["schema.sql", "migration.sql"],
-      "must_mention_any": ["duplicate", "1205", "1,205", "1437", "1,437", "duplicated"],
-      "mitigation_must_mention_any": ["dedupe", "merge", "resolve", "clean"],
-      "requires_human_approval": true
+      "must_cite_evidence": [
+        "schema.sql",
+        "migration.sql"
+      ],
+      "must_mention_any": [
+        "duplicate",
+        "1205",
+        "1,205",
+        "1437",
+        "1,437",
+        "duplicated"
+      ],
+      "mitigation_must_mention_any": [
+        "dedupe",
+        "merge",
+        "resolve",
+        "clean"
+      ],
+      "approval": "accept-risk",
+      "reversible": false
     },
     {
       "id": "F2",
       "severity": "HIGH",
       "critical": false,
       "category": "lock-and-rewrite",
-      "must_cite_evidence": ["migration.sql"],
-      "must_mention_any": ["CONCURRENTLY", "ACCESS EXCLUSIVE", "lock"],
-      "mitigation_must_mention_any": ["CONCURRENTLY", "USING INDEX"]
+      "must_cite_evidence": [
+        "migration.sql"
+      ],
+      "must_mention_any": [
+        "CONCURRENTLY",
+        "ACCESS EXCLUSIVE",
+        "lock"
+      ],
+      "mitigation_must_mention_any": [
+        "CONCURRENTLY",
+        "USING INDEX"
+      ],
+      "approval": "schedule",
+      "reversible": true
     },
     {
       "id": "F3",
       "severity": "MEDIUM",
       "critical": false,
       "category": "application-compatibility",
-      "must_cite_evidence": ["application-usage.md"],
-      "must_mention_any": ["import", "bulk_create", "import_customers"]
+      "must_cite_evidence": [
+        "application-usage.md"
+      ],
+      "must_mention_any": [
+        "import",
+        "bulk_create",
+        "import_customers"
+      ],
+      "approval": "none",
+      "reversible": true
     }
   ],
   "forbidden_findings": [],
-  "required_unknowns": ["import", "surviving"],
-  "required_report_sections": ["scope", "verdict", "findings"],
-  "notes": "A report that recommends citext/lower(email) in addition to plain UNIQUE shows the deepest understanding; not required but must not be penalised."
+  "required_unknowns": [
+    "import",
+    "surviving"
+  ],
+  "required_report_sections": [
+    "scope",
+    "verdict",
+    "findings"
+  ],
+  "notes": "A report that recommends citext/lower(email) in addition to plain UNIQUE shows the deepest understanding; not required but must not be penalised.",
+  "irreversible": true
 }

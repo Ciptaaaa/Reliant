@@ -26,7 +26,7 @@ can create more orphans).
    orphans reappear and the FK writes begin failing at runtime.
 4. Add the FK — see F4 for the lock clause and F2 for the delete semantics.
 
-**Human approval required:** yes — relinking or deleting 47,308 financial records.
+**Approval: accept-risk (F1)** — a human accepts the loss of the old values; a recovery plan and restore point are required.
 
 ### F2 — `HIGH` — `application-compatibility` — default FK action breaks order archival
 

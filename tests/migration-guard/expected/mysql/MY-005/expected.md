@@ -45,6 +45,8 @@ truncate valid values. The column is not indexed and no generated columns or FKs
 dependent objects break. Application reads treat it as a string
 (`InvoiceResource.php:22`), so the type change is transparent to code.
 
+**Approval: schedule (F1)** — reversible, but needs a window, throttle, and abort conditions.
+
 ## Unknowns that must be reported
 
 - Nobody has run this `ALTER` on staging; the duration and accepted algorithm/lock are unmeasured.

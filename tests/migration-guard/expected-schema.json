@@ -69,7 +69,11 @@
       "uniqueItems": true
     },
     "destructive": {
-      "$comment": "True when the migration contains a destructive step. The report must then state an explicit human approval gate.",
+      "$comment": "Deprecated. True when the migration contains an irreversible step (data cannot be restored). The report must then state an approval to accept risk and a recovery plan. Use `irreversible`.",
+      "type": "boolean"
+    },
+    "irreversible": {
+      "$comment": "True when the migration loses or overwrites data that cannot be restored without a backup. Separate from `destructive`, which only described the shape of the statement.",
       "type": "boolean"
     },
     "notes": {
@@ -131,6 +135,15 @@
           "minItems": 1
         },
         "requires_human_approval": {
+          "$comment": "Deprecated. True only when an approval to accept risk is required. Prefer `approval`.",
+          "type": "boolean"
+        },
+        "approval": {
+          "$comment": "Approval class required for this finding, decided by reversibility, not by operation type. `none` = reversible and additive. `schedule` = reversible but costly (window/throttle). `accept-risk` = the previous value cannot be restored.",
+          "enum": ["none", "schedule", "accept-risk"]
+        },
+        "reversible": {
+          "$comment": "True when the previous value or structure can be restored without a backup.",
           "type": "boolean"
         }
       }

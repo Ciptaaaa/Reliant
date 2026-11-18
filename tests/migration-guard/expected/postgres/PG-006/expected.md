@@ -20,7 +20,7 @@ transaction; it is safe once the transaction wrapper is removed and the invalid-
 non-Rails runners), or run it out-of-band with `psql -1` omitted. Verify with a migration smoke test
 on a staging database.
 
-**Human approval required:** no — additive index build, no data change.
+**Approval: none** — every step in this migration is reversible without a backup.
 
 ### F2 — `HIGH` — `index-build` — a failed concurrent build leaves an `INVALID` index
 

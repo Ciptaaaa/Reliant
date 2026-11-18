@@ -31,7 +31,7 @@ Decide the intended semantics first: if the code is case-insensitive by design, 
 collation and dedupe case-insensitively; if it is case-sensitive, use a `utf8mb4_bin` (or
 `utf8mb4_0900_as_cs`) collation on the column and dedupe exactly.
 
-**Human approval required:** yes — deduplication deletes or merges customer rows.
+**Approval: accept-risk (F1)** — a human accepts the loss of the old values; a recovery plan and restore point are required.
 
 ### F2 — `HIGH` — `index-build` — the online-DDL clause does not make the data problem go away
 

@@ -4,7 +4,9 @@
   "kind": "negative",
   "title": "Add constant default via the safe path (safe)",
   "expected_verdict": "APPROVED",
-  "allowed_verdicts": ["APPROVED"],
+  "allowed_verdicts": [
+    "APPROVED"
+  ],
   "destructive": false,
   "required_findings": [
     {
@@ -12,16 +14,41 @@
       "severity": "LOW",
       "critical": false,
       "category": "operational",
-      "must_cite_evidence": ["migration.sql", "context.md"],
-      "must_mention_any": ["non-volatile", "constant", "metadata", "no rewrite", "not rewrite"]
+      "must_cite_evidence": [
+        "migration.sql",
+        "context.md"
+      ],
+      "must_mention_any": [
+        "non-volatile",
+        "constant",
+        "metadata",
+        "no rewrite",
+        "not rewrite"
+      ],
+      "approval": "none",
+      "reversible": true
     }
   ],
   "forbidden_findings": [
-    { "category": "data-integrity", "max_severity_if_present": "INFO" },
-    { "category": "lock-and-rewrite", "max_severity_if_present": "LOW" },
-    { "category": "backfill", "max_severity_if_present": "INFO" }
+    {
+      "category": "data-integrity",
+      "max_severity_if_present": "INFO"
+    },
+    {
+      "category": "lock-and-rewrite",
+      "max_severity_if_present": "LOW"
+    },
+    {
+      "category": "backfill",
+      "max_severity_if_present": "INFO"
+    }
   ],
   "required_unknowns": [],
-  "required_report_sections": ["scope", "verdict", "findings"],
-  "notes": "Calibration trap: NOT NULL DEFAULT on an existing table is safe when the column is new and the default is non-volatile."
+  "required_report_sections": [
+    "scope",
+    "verdict",
+    "findings"
+  ],
+  "notes": "Calibration trap: NOT NULL DEFAULT on an existing table is safe when the column is new and the default is non-volatile.",
+  "irreversible": false
 }

@@ -23,6 +23,8 @@ cost on any size.
 No column altered or dropped, no constraint or index added, no backfill, no application code reads the
 column yet. Old and new application versions both work.
 
+**Approval: none** — every step in this migration is reversible without a backup.
+
 ## Unknowns that must be reported
 
 - None material. The later use of the column is not part of this migration.

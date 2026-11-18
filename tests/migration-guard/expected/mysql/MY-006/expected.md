@@ -29,7 +29,7 @@ the primary for 2–6 minutes).
    fails fast instead of stalling the table.
 4. Watch `performance_schema.metadata_locks` (LOCK_STATUS = PENDING) and `sys.schema_table_lock_waits`.
 
-**Human approval required:** no, but change-management approval for the schedule.
+**Approval: schedule (F1)** — reversible, but needs a window, throttle, and abort conditions.
 
 ### F2 — `HIGH` — `lock-and-rewrite` — explicit `INPLACE`/`LOCK=SHARED` forces a rebuild
 

@@ -22,6 +22,8 @@ adding it will not trigger an implicit index build.
 `invoice_drafts` is not referenced by any code (`application-usage.md`), so old and new application
 versions are unaffected. No FK or view depends on it. There is no data to backfill.
 
+**Approval: none** — every step in this migration is reversible without a backup.
+
 ## Unknowns that must be reported
 
 - The future FK and its `ON DELETE` semantics are a separate change and are not reviewed here.

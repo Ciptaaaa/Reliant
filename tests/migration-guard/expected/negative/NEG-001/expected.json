@@ -4,7 +4,9 @@
   "kind": "negative",
   "title": "Add nullable column, nothing else (safe)",
   "expected_verdict": "APPROVED",
-  "allowed_verdicts": ["APPROVED"],
+  "allowed_verdicts": [
+    "APPROVED"
+  ],
   "destructive": false,
   "required_findings": [
     {
@@ -12,19 +14,51 @@
       "severity": "LOW",
       "critical": false,
       "category": "operational",
-      "must_cite_evidence": ["migration.sql"],
-      "must_mention_any": ["metadata", "no rewrite", "not rewrite", "nullable"]
+      "must_cite_evidence": [
+        "migration.sql"
+      ],
+      "must_mention_any": [
+        "metadata",
+        "no rewrite",
+        "not rewrite",
+        "nullable"
+      ],
+      "approval": "none",
+      "reversible": true
     }
   ],
   "forbidden_findings": [
-    { "category": "data-integrity", "max_severity_if_present": "INFO" },
-    { "category": "lock-and-rewrite", "max_severity_if_present": "LOW" },
-    { "category": "backfill", "max_severity_if_present": "INFO" },
-    { "category": "destructive-column-drop", "max_severity_if_present": "INFO" },
-    { "category": "unique-constraint", "max_severity_if_present": "INFO" },
-    { "category": "foreign-key", "max_severity_if_present": "INFO" }
+    {
+      "category": "data-integrity",
+      "max_severity_if_present": "INFO"
+    },
+    {
+      "category": "lock-and-rewrite",
+      "max_severity_if_present": "LOW"
+    },
+    {
+      "category": "backfill",
+      "max_severity_if_present": "INFO"
+    },
+    {
+      "category": "destructive-column-drop",
+      "max_severity_if_present": "INFO"
+    },
+    {
+      "category": "unique-constraint",
+      "max_severity_if_present": "INFO"
+    },
+    {
+      "category": "foreign-key",
+      "max_severity_if_present": "INFO"
+    }
   ],
   "required_unknowns": [],
-  "required_report_sections": ["scope", "verdict", "findings"],
-  "notes": "Pure false-positive control."
+  "required_report_sections": [
+    "scope",
+    "verdict",
+    "findings"
+  ],
+  "notes": "Pure false-positive control.",
+  "irreversible": false
 }

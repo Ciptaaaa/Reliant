@@ -30,7 +30,7 @@ of view).
 4. Prevent new duplicates **before** the constraint exists: the `clean_email` check is a race. Add the
    index in a separate step and deploy the code that handles `IntegrityError` at the same time.
 
-**Human approval required:** yes — resolving duplicates deletes or rewrites account rows.
+**Approval: accept-risk (F1)** — a human accepts the loss of the old values; a recovery plan and restore point are required.
 
 ### F2 — `HIGH` — `lock-and-rewrite` — index build under `ACCESS EXCLUSIVE`
 

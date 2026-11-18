@@ -30,7 +30,7 @@ fails until they are resolved. Do not report `NOT VALID` as a complete mitigatio
    step (`SHARE UPDATE EXCLUSIVE`, does not block writes).
 4. Fix `LegacyOrderImport.php` to verify the customer exists, or it will recreate orphans.
 
-**Human approval required:** yes — re-linking or nulling 22,913 financial records is a data decision.
+**Approval: accept-risk (F1)** — a human accepts the loss of the old values; a recovery plan and restore point are required.
 
 ### F2 — `HIGH` — `application-compatibility` — the default `NO ACTION` breaks hard delete
 

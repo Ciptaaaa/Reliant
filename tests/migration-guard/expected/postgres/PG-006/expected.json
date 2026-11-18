@@ -4,7 +4,9 @@
   "kind": "positive",
   "title": "CREATE INDEX CONCURRENTLY inside a transaction",
   "expected_verdict": "CONDITIONAL",
-  "allowed_verdicts": ["CONDITIONAL"],
+  "allowed_verdicts": [
+    "CONDITIONAL"
+  ],
   "destructive": false,
   "required_findings": [
     {
@@ -12,23 +14,55 @@
       "severity": "HIGH",
       "critical": false,
       "category": "index-build",
-      "must_cite_evidence": ["migration.sql", "context.md"],
-      "must_mention_any": ["transaction block", "cannot run inside", "transaction"],
-      "mitigation_must_mention_any": ["disable_ddl_transaction", "outside a transaction", "separate"],
-      "requires_human_approval": false
+      "must_cite_evidence": [
+        "migration.sql",
+        "context.md"
+      ],
+      "must_mention_any": [
+        "transaction block",
+        "cannot run inside",
+        "transaction"
+      ],
+      "mitigation_must_mention_any": [
+        "disable_ddl_transaction",
+        "outside a transaction",
+        "separate"
+      ],
+      "approval": "none",
+      "reversible": true
     },
     {
       "id": "F2",
       "severity": "HIGH",
       "critical": false,
       "category": "index-build",
-      "must_cite_evidence": ["migration.sql"],
-      "must_mention_any": ["invalid", "indisvalid", "left behind"],
-      "mitigation_must_mention_any": ["indisvalid", "DROP INDEX", "retry", "rebuild"]
+      "must_cite_evidence": [
+        "migration.sql"
+      ],
+      "must_mention_any": [
+        "invalid",
+        "indisvalid",
+        "left behind"
+      ],
+      "mitigation_must_mention_any": [
+        "indisvalid",
+        "DROP INDEX",
+        "retry",
+        "rebuild"
+      ],
+      "approval": "none",
+      "reversible": true
     }
   ],
   "forbidden_findings": [],
-  "required_unknowns": ["long-running"],
-  "required_report_sections": ["scope", "verdict", "findings"],
-  "notes": "F3 (non-blocking) may be merged into F1 as an INFO note about the correct form; the evaluator does not require F3."
+  "required_unknowns": [
+    "long-running"
+  ],
+  "required_report_sections": [
+    "scope",
+    "verdict",
+    "findings"
+  ],
+  "notes": "F3 (non-blocking) may be merged into F1 as an INFO note about the correct form; the evaluator does not require F3.",
+  "irreversible": false
 }
