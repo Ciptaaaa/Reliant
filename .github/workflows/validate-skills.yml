@@ -1,0 +1,120 @@
+name: Validate skills
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHON_VERSION: "3.12".
+  SKILLS_REF_REF: "main"
+
+jobs:
+  structure:
+    name: Repository structure and skill format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Validate repository
+        run: python scripts/validate_repo.py
+
+      - name: Score every recorded eval iteration
+        if: hashFiles('evals/results/*/') != ''
+        run: |
+          for dir in evals/results/*/; do
+            echo "::group::evaluate $dir"
+            python scripts/evaluate_reports.py --reports "$dir" --report-only \
+              --json "$dir/scorecard.json"
+            echo "::endgroup::"
+          done
+
+  skills-ref:
+    name: Official validator (secondary)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install pinned skills-ref
+        run: |
+          git clone --quiet https://github.com/agentskills/agentskills.git skills-ref-src
+          cd skills-ref-src/skills-ref
+          git checkout --quiet "$SKILLS_REF_REF"
+          pip install --quiet .
+          echo "$GITHUB_WORKSPACE/skills-ref-src/skills-ref" >> "$GITHUB_PATH"
+
+      - name: Validate each skill
+        run: |
+          status=0
+          for skill in skills/*/; do
+            echo "::group::skills-ref validate $skill"
+            skills-ref validate "${skill%/}" || status=1
+            echo "::endgroup::"
+          done
+          exit $status
+
+  fixtures:
+    name: Verify test fixtures against real databases
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: fixture
+          POSTGRES_DB: fixture
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: fixture
+          MYSQL_DATABASE: fixture
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -pfixture"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install clients
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client mariadb-client
+      - name: Apply fixtures and check expected failures
+        env:
+          PGPASSWORD: fixture
+          MYSQL_PWD: fixture
+        run: |
+          python scripts/check_fixtures.py \
+            --postgres "postgresql://postgres:fixture@127.0.0.1:5432/fixture" \
+            --mysql "mysql://root:fixture@127.0.0.1:3306/fixture"
+
+  docs:
+    name: Documentation hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Check for unsubstantiated performance claims
+        run: python scripts/check_claims.py README.md

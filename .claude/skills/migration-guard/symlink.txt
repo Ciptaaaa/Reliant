@@ -1,0 +1,12 @@
+This is a pointer file for checkouts where the directory link was not preserved
+(git symlinks disabled, or a Windows checkout without Developer Mode).
+
+Target: skills/migration-guard
+
+To restore a working skill directory, delete this folder and create a link from the repo root:
+  Windows (cmd):    mklink /J .claude\\skills\\migration-guard skills\\migration-guard
+  PowerShell:       New-Item -ItemType Junction -Path .claude\\skills\\migration-guard -Target skills\\migration-guard
+  macOS / Linux:    ln -s ../../skills/migration-guard .claude/skills/migration-guard
+
+A working skill is the link, not this file. The repository validator and the test suite do not
+need this layer; it only lets an agent product auto-discover the skill.
