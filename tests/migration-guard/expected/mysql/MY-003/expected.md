@@ -31,7 +31,7 @@ Decide the intended semantics first: if the code is case-insensitive by design, 
 collation and dedupe case-insensitively; if it is case-sensitive, use a `utf8mb4_bin` (or
 `utf8mb4_0900_as_cs`) collation on the column and dedupe exactly.
 
-**Approval: accept-risk (F1)** — a human accepts the loss of the old values; a recovery plan and restore point are required.
+**Approval: none (F1)** — the unique index build is refused and the DDL rolls back, so no data is lost. Resolving the duplicates is the separate data change that needs a human decision.
 
 ### F2 — `HIGH` — `index-build` — the online-DDL clause does not make the data problem go away
 

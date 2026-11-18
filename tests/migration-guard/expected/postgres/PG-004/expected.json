@@ -7,7 +7,6 @@
   "allowed_verdicts": [
     "BLOCKED"
   ],
-  "destructive": true,
   "required_findings": [
     {
       "id": "F1",
@@ -32,8 +31,8 @@
         "resolve",
         "clean"
       ],
-      "approval": "accept-risk",
-      "reversible": false
+      "approval": "none",
+      "reversible": true
     },
     {
       "id": "F2",
@@ -92,5 +91,5 @@
     "findings"
   ],
   "notes": "Saying NOT VALID alone is safe is the failure this case guards against. Mitigation must include resolving orphans.",
-  "irreversible": true
+  "irreversible": false
 }

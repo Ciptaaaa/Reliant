@@ -30,7 +30,7 @@ of view).
 4. Prevent new duplicates **before** the constraint exists: the `clean_email` check is a race. Add the
    index in a separate step and deploy the code that handles `IntegrityError` at the same time.
 
-**Approval: accept-risk (F1)** — a human accepts the loss of the old values; a recovery plan and restore point are required.
+**Approval: none (F1)** — the statement is refused by the engine and rolls back, so no data is lost and no one has to accept any. It is still a BLOCKER because the deploy cannot succeed until the duplicates are resolved. The data change that resolves them (merge or rename rows) is where a human decision is required.
 
 ### F2 — `HIGH` — `lock-and-rewrite` — index build under `ACCESS EXCLUSIVE`
 

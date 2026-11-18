@@ -7,7 +7,6 @@
   "allowed_verdicts": [
     "CONDITIONAL"
   ],
-  "destructive": true,
   "required_findings": [
     {
       "id": "F1",
@@ -34,8 +33,8 @@
         "decision",
         "numeric"
       ],
-      "approval": "accept-risk",
-      "reversible": false
+      "approval": "none",
+      "reversible": true
     },
     {
       "id": "F2",
@@ -85,5 +84,5 @@
     "findings"
   ],
   "notes": "Either HIGH severity with different categories (type-change and lock-and-rewrite) counts, as long as each required finding is present.",
-  "irreversible": true
+  "irreversible": false
 }

@@ -36,7 +36,7 @@ hypothetical.
 If the team insists on a rename, the deploy must stop the world (stop the old version fully, rename,
 start the new version), which must be explicitly approved and has a downtime cost.
 
-**Approval: accept-risk (F1)** — a human accepts the loss of the old values; a recovery plan and restore point are required.
+**Approval: schedule (F1)** — a rename loses no data, so no one has to accept data loss. What it needs is a deploy schedule: expand-and-contract, or a documented stop-the-world window.
 written is a breaking deploy.
 
 ### F2 — `LOW` — `lock-and-rewrite` — instantaneous `ACCESS EXCLUSIVE`

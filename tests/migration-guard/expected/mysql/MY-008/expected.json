@@ -33,7 +33,7 @@
         "expand",
         "both"
       ],
-      "approval": "accept-risk",
+      "approval": "schedule",
       "reversible": true
     },
     {

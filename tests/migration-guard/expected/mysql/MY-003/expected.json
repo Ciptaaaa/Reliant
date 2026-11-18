@@ -7,7 +7,6 @@
   "allowed_verdicts": [
     "BLOCKED"
   ],
-  "destructive": true,
   "required_findings": [
     {
       "id": "F1",
@@ -34,8 +33,8 @@
         "merge",
         "clean"
       ],
-      "approval": "accept-risk",
-      "reversible": false
+      "approval": "none",
+      "reversible": true
     },
     {
       "id": "F2",
@@ -55,29 +54,6 @@
         "staging",
         "SHOW WARNINGS",
         "metadata_lock",
-        "dedupe",
-        "first"
-      ],
-      "approval": "schedule",
-      "reversible": true
-    },
-    {
-      "id": "F2",
-      "severity": "HIGH",
-      "critical": false,
-      "category": "index-build",
-      "must_cite_evidence": [
-        "migration.sql"
-      ],
-      "must_mention_any": [
-        "INPLACE",
-        "ALGORITHM",
-        "online",
-        "scan"
-      ],
-      "mitigation_must_mention_any": [
-        "staging",
-        "metadata",
         "dedupe",
         "first"
       ],
@@ -113,5 +89,5 @@
     "findings"
   ],
   "notes": "The collation insight (ai_ci makes lower=upper collide) is the depth marker of this case.",
-  "irreversible": true
+  "irreversible": false
 }

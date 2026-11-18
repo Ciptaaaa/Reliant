@@ -7,7 +7,6 @@
   "allowed_verdicts": [
     "BLOCKED"
   ],
-  "destructive": true,
   "required_findings": [
     {
       "id": "F1",
@@ -32,8 +31,8 @@
         "clean",
         "move"
       ],
-      "approval": "accept-risk",
-      "reversible": false
+      "approval": "none",
+      "reversible": true
     },
     {
       "id": "F2",
@@ -98,5 +97,5 @@
     "findings"
   ],
   "notes": "The unique depth marker is realising ADD FOREIGN KEY is COPY-only unless foreign_key_checks=0. Claiming it runs online is the failure this fixture guards against.",
-  "irreversible": true
+  "irreversible": false
 }

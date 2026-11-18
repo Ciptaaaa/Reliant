@@ -33,7 +33,7 @@ lossy `USING` without a decision record.
    or use the add-new-column + dual-write + backfill + swap (expand and contract) so the rewrite
    happens in batches.
 
-**Approval: accept-risk (F1)** — a human accepts the loss of the old values; a recovery plan and restore point are required.
+**Approval: none (F1)** — PostgreSQL aborts the conversion atomically with integer out of range (SQLSTATE 22003), so no value is truncated and nothing is lost. Deciding what to do with the 3,842 out-of-range rows is the decision that needs a human.
 
 ### F2 — `HIGH` — `lock-and-rewrite` — full table and index rewrite under `ACCESS EXCLUSIVE`
 

@@ -30,7 +30,7 @@ fails until they are resolved. Do not report `NOT VALID` as a complete mitigatio
    step (`SHARE UPDATE EXCLUSIVE`, does not block writes).
 4. Fix `LegacyOrderImport.php` to verify the customer exists, or it will recreate orphans.
 
-**Approval: accept-risk (F1)** — a human accepts the loss of the old values; a recovery plan and restore point are required.
+**Approval: none (F1)** — the constraint is refused and rolls back, so no data is lost and there is nothing to accept. Repairing the 22,913 orphans is a separate data change that does need a human decision.
 
 ### F2 — `HIGH` — `application-compatibility` — the default `NO ACTION` breaks hard delete
 

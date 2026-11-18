@@ -33,7 +33,7 @@ rolling update finishes. During that window:
 If the team insists on a true rename with zero old readers, it needs a stop-the-world deploy and
 explicit approval.
 
-**Approval: accept-risk (F1)** — a human accepts the loss of the old values; a recovery plan and restore point are required.
+**Approval: schedule (F1)** — a rename loses no data, so no one has to accept data loss. What it needs is a deploy schedule: expand-and-contract, or a documented stop-the-world window.
 
 ### F2 — `LOW` — `lock-and-rewrite` — instant DDL, metadata-only
 
