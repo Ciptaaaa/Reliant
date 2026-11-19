@@ -107,7 +107,14 @@ directory name. `skills/migration-guard/SKILL.md` declares `name: migration-guar
 
 Checked on a fresh clone: `.claude/skills/migration-guard/SKILL.md` and
 `.agents/skills/migration-guard/SKILL.md` do not exist, so an agent that only looks in those paths finds
-nothing. `scripts/validate_repo.py` warns while the pointer file is in place.
+nothing. This is not a bug in the checkout, and the repository does not work around it: a committed link
+under `core.symlinks=false` is stored as a plain text file that no agent reads, and a committed copy
+would drift. The pointer file is a note, not a fallback. Until the command below is run, the only client
+that finds the skill is Kilo Code through `kilo.json`.
+
+`scripts/validate_repo.py` warns while the pointer file is in place. Treat that warning as a setup item
+list: on a machine where you use Claude Code or Copilot, a clean validator run means the link exists;
+on a machine that only uses Kilo Code, it is expected and can be ignored.
 
 To activate one, remove the pointer directory first — every link command refuses an existing target —
 then create the link from the repository root:
@@ -122,9 +129,17 @@ rmdir /S /Q .agents\skills\migration-guard
 mklink /J .agents\skills\migration-guard skills\migration-guard
 ```
 
+`.claude/skills/migration-guard` is at the same depth, so the same `../../` target applies.
+
 Verify: `.agents/skills/migration-guard/SKILL.md` exists. Do **not** replace the pointer with a copied
 directory: git stores the skill twice and the copies drift. That was tried during release verification
 and reverted for exactly that reason.
+
+### What a release has to decide
+
+The compat layer is a per-machine setup step, not a distributable artifact, and v0.1.0 ships it that way.
+The release notes must say so in one line, because "skills are auto-discovered" is false for every client
+except Kilo Code until the link command runs.
 
 ### Format conformance
 
@@ -135,8 +150,9 @@ and reverted for exactly that reason.
 - `SKILL.md`: kept under 500 lines / ~5000 tokens; detailed material lives in `references/` and is
   loaded on demand.
 
-Validated locally by `scripts/validate_repo.py` and, as a secondary check, by the pinned `skills-ref`
-validator in CI.
+Validated locally by `scripts/validate_repo.py` and by the `skills-ref` validator pinned to a commit SHA
+in CI. The `skills-ref` job is a gate: a failure fails the workflow, and a pin that cannot be fetched
+also fails rather than silently skipping the check.
 
 ## 5. Host requirements
 

@@ -98,10 +98,9 @@ Every metric passes, so the remaining blockers are about evidence, not code:
 
 | Criterion | Status |
 |---|---|
-| Every metric at target on a recorded iteration | Met (iteration-4) |
-| Three runs per case | **Not met** — one run per case |
+| Every metric at target on a recorded iteration | Met on iteration-4, but that run is self-evaluated and one run per case; it is not quoted as proof |
+| Three runs per case | **Not met** — iteration-4 recorded one run per case |
 | Run on a model family other than the one that wrote the suite | **Not met** — never attempted |
-| GitHub Actions green | **Not proven** — the fixture bugs are fixed locally and not yet pushed |
 
 ## Install
 
@@ -117,8 +116,12 @@ start: after changing the config, run `/reload` or start a new session.
 
 The other clients look in `.claude/skills/<name>/SKILL.md` and `.agents/skills/<name>/SKILL.md`. This
 repository is committed with `core.symlinks=false`, so those paths contain a `symlink.txt` pointer rather
-than a working link. Create the link from the repository root — the pointer directory must be removed
-first, because every link command refuses an existing target:
+than a working link: **as committed, Claude Code and Copilot do not find the skill.** The pointer files
+record the command and the reason; they are not a fallback that works on their own. For every client
+other than Kilo Code, run the setup once after cloning.
+
+Create the link from the repository root — the pointer directory must be removed first, because every
+link command refuses an existing target:
 
 ```bash
 # macOS / Linux
@@ -130,10 +133,11 @@ rmdir /S /Q .agents\skills\migration-guard
 mklink /J .agents\skills\migration-guard skills\migration-guard
 ```
 
-Use `.claude/skills/migration-guard` instead for Claude Code. Verify with
+Use `.claude/skills/migration-guard` instead for Claude Code, including the `../../` prefix in the `ln -s`
+target because that directory sits at the same depth. Verify with
 `test -f .agents/skills/migration-guard/SKILL.md`; `python scripts/validate_repo.py` warns while the
-pointer file is still in place. Do not copy the directory in place of the link: git would store the
-skill twice and the copies would drift.
+pointer file is still in place, so a clean run is the proof that the link exists. Do not copy the
+directory in place of the link: git would store the skill twice and the copies would drift.
 
 To use the skill in another project, point that project's `kilo.json` at this `skills/` directory, or
 copy `skills/migration-guard/` into its skill directory.
