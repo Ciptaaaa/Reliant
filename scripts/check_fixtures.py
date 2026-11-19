@@ -39,7 +39,9 @@ MUST_FAIL = {
     "MY-002": "Invalid use of NULL value",
     "MY-003": "Duplicate entry",
     "MY-004": "Cannot add or update a child row",
-    "MY-005": "ALGORITHM=INSTANT is not supported",
+    # Must match the text MySQL actually returns (ERROR 1221), otherwise evaluate() only passes
+    # through the "message differs" branch and the check proves nothing about the reason.
+    "MY-005": "Incorrect usage of ALGORITHM=INSTANT",
 }
 
 # Cases where the schema alone will not reproduce the failure. The seed statements create the offending
@@ -141,12 +143,19 @@ def check_postgres(root: Path, conn: str, case_id: str) -> bool:
         if case_id == "PG-001"
         else ""
     )
+
+    # Why `, public` matters: `CREATE EXTENSION citext` runs while search_path is still the default,
+    # so the type lands in `public`. If search_path were only the case schema, `citext` could not be
+    # resolved even though it exists (probe says "present", CREATE TABLE says "does not exist").
+    # The case schema stays first so the fixture's tables are created there, not in `public`.
+    search_path = f"SET search_path TO {namespace}, public;\n"
+
     bootstrap = (
         f"CREATE EXTENSION IF NOT EXISTS citext;\n"
         f"{fallback}"
         f"DROP SCHEMA IF EXISTS {namespace} CASCADE;\n"
         f"CREATE SCHEMA {namespace};\n"
-        f"SET search_path TO {namespace};\n"
+        f"{search_path}"
     )
     setup = f"{bootstrap}BEGIN;\n{prelude}\n{schema}\n{seed}\nCOMMIT;\n"
     code, out = run(["psql", conn, "-v", "ON_ERROR_STOP=1", "-q", "-f", "-"], setup)
@@ -154,8 +163,9 @@ def check_postgres(root: Path, conn: str, case_id: str) -> bool:
         print(f"[{case_id}] SETUP FAILED\n{out}")
         return False
     # Run the migration in its own transaction, inside the same schema, so a failure does not leave
-    # state behind and does not touch another case.
-    script = f"SET search_path TO {namespace};\nBEGIN;\n{migration}\nCOMMIT;\n"
+    # state behind and does not touch another case. The migration text MUST be interpolated here:
+    # a placeholder would make every PG case "fail" with a syntax error and pass for the wrong reason.
+    script = f"{search_path}BEGIN;\n{migration}\nCOMMIT;\n"
     code, out = run(["psql", conn, "-v", "ON_ERROR_STOP=1", "-q", "-f", "-"], script)
     result = evaluate(case_id, code, out)
     # Clean up so a rerun starts from nothing.
