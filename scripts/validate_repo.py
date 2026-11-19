@@ -58,6 +58,17 @@ CATEGORIES = (
     "no-risk-observed",
 )
 CASE_FILES = ("context.md", "schema.sql", "migration.sql", "application-usage.md")
+# Statements that remove stored data, or that remove structure together with the values in it. Only
+# these can make a case irreversible; every other DDL either adds, or is refused by the engine before
+# any row is written. `DROP INDEX`/`DROP CONSTRAINT`/`DROP DEFAULT` are excluded on purpose: they drop
+# structure, not values.
+REMOVING_SQL_RE = re.compile(
+    r"\b(?:DROP\s+TABLE|DROP\s+COLUMN|TRUNCATE(?:\s+TABLE)?|DELETE\s+FROM)\b",
+    re.IGNORECASE,
+)
+# Comments are stripped before the match: the fixtures carry a `-- database/migrations/...` header, and a
+# comment that mentions `DROP COLUMN` must not be able to earn an `irreversible: true` claim.
+SQL_COMMENT_RE = re.compile(r"--[^\n]*|/\*.*?\*/", re.DOTALL)
 REQUIRED_REPO_FILES = (
     "README.md",
     "CONTRIBUTING.md",
@@ -523,6 +534,25 @@ def check_expected(cid: str, case_dir: Path, ej: Path) -> bool:
     if irreversible and not any(rf.get("reversible") is False for rf in findings):
         fail(f"{rel}: irreversible=true but no finding declares reversible=false; "
              f"either flag the finding or set irreversible=false")
+    # The flag itself must be earned by the migration, not asserted. Reversibility is a question about
+    # stored data (change-impact-taxonomy §4: undoing the structure does not restore the values), so a
+    # migration that only adds or narrows a constraint cannot be irreversible: the engine refuses it and
+    # no row changes. Checking the statement keeps a fixture from claiming data loss it cannot produce.
+    # A case whose plan loses data without stating it in `migration.sql` — an expand-and-contract whose
+    # drop step is not written yet — declares that in `irreversible_reason` instead. The reason is
+    # checked for content, so the escape hatch cannot be an empty acknowledgement.
+    reason = e.get("irreversible_reason")
+    if reason is not None and not isinstance(reason, str):
+        fail(f"{rel}: irreversible_reason must be a string")
+    if irreversible:
+        statement_removes = REMOVING_SQL_RE.search(SQL_COMMENT_RE.sub("", (case_dir / "migration.sql").read_text(encoding="utf-8")))
+        if not statement_removes and not (isinstance(reason, str) and len(reason.strip()) >= 20):
+            fail(f"{rel}: irreversible=true but migration.sql has no statement that removes stored data "
+                 f"(expected DROP TABLE / DROP COLUMN / TRUNCATE / DELETE); a refused constraint or a "
+                 f"failed type change loses nothing. If the loss comes from a later step, add "
+                 f"irreversible_reason explaining it")
+    elif isinstance(reason, str) and reason.strip():
+        fail(f"{rel}: irreversible_reason is set but irreversible is false")
     for fb in e.get("forbidden_findings", []):
         if not fb.get("category"):
             fail(f"{rel}: forbidden finding without category")

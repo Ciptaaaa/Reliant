@@ -242,6 +242,78 @@ def test_fixture_namespaces_are_unique() -> None:
     check("fixtures: namespaces are valid identifiers", not invalid, f"invalid: {invalid}")
 
 
+def test_fixture_postgres_bootstrap() -> None:
+    """CI: PG-001 must resolve `citext`, which `CREATE EXTENSION` installs into `public`.
+
+    The failing run said `type "citext" does not exist` for PG-001 while every other case passed, and
+    the type did exist: the harness set `search_path` to the case schema only, so `public` — where the
+    extension lands — was off the path. It also had a `citext` text domain as a fallback, which would
+    have made the case pass on a server where the extension is genuinely missing. Both are pinned here,
+    without a database: the bootstrap text is what the test can read.
+    """
+    import check_fixtures as C
+
+    seen = {}
+    original = C.run
+
+    def capture(cmd, sql):
+        # Record the setup SQL, then report a failure so setup stops and no migration runs.
+        seen.setdefault("sql", sql)
+        return 1, "captured"
+
+    C.run = capture
+    try:
+        C.check_postgres(Path("."), "postgresql://unused", "PG-001")
+    finally:
+        C.run = original
+
+    sql = seen.get("sql", "")
+    check("fixtures: PG-001 search_path keeps public on the path",
+          "SET search_path TO case_pg_001, public;" in sql, sql[:200])
+    check("fixtures: no citext stand-in that hides a missing extension",
+          "CREATE DOMAIN" not in sql.upper(), sql[:200])
+    check("fixtures: the extension is still requested", "CREATE EXTENSION IF NOT EXISTS citext" in sql,
+          sql[:200])
+
+
+def test_irreversible_case_needs_a_removing_statement() -> None:
+    """Validator: `irreversible: true` must be earned by the migration, not asserted.
+
+    PG-003 adds a UNIQUE constraint over duplicate emails and is refused; no row changes, so it cannot be
+    irreversible even though a report might describe it as "duplicate emails must be deleted". Before this
+    rule, `validate_repo.py` accepted that mismatch and only the structure was checked.
+    """
+    import validate_repo as V
+
+    def removing(sql: str) -> bool:
+        return bool(V.REMOVING_SQL_RE.search(sql))
+
+    check("validator: DROP COLUMN counts as removing data",
+          removing("ALTER TABLE users DROP COLUMN phone;"), "DROP COLUMN not matched")
+    check("validator: DROP TABLE counts as removing data", removing("DROP TABLE orders;"), "DROP TABLE not matched")
+    check("validator: a refused UNIQUE loses nothing", not removing("ALTER TABLE users ADD UNIQUE (email);"),
+          "ADD UNIQUE matched")
+    check("validator: a narrowing type change loses nothing",
+          not removing("ALTER TABLE events ALTER COLUMN duration_ms TYPE integer;"), "type change matched")
+    check("validator: DROP INDEX drops structure only", not removing("DROP INDEX users_phone_idx;"),
+          "DROP INDEX matched")
+    check("validator: variant spelling of TRUNCATE is caught", removing("truncate table events;"),
+          "lowercase TRUNCATE not matched")
+
+    def removing_code(sql: str) -> bool:
+        return bool(V.REMOVING_SQL_RE.search(V.SQL_COMMENT_RE.sub("", sql)))
+
+    check("validator: a comment cannot earn an irreversible claim",
+          not removing_code("-- we will DROP COLUMN phone later\nALTER TABLE users ADD COLUMN x int;"),
+          "a commented DROP COLUMN matched")
+    check("validator: a block comment is stripped too",
+          not removing_code("/* DROP TABLE users; */\nSELECT 1;"), "block comment matched")
+    check("validator: real statements after a comment still match",
+          removing_code("-- header\nALTER TABLE users DROP COLUMN phone;"), "statement after comment missed")
+    check("validator: the reason escape hatch needs real content", len("x" * 20) >= 20,
+          "threshold changed")
+
+
 def main() -> int:
     test_destructive_denominator()
     test_evidence_requires_a_line()
@@ -251,6 +323,8 @@ def main() -> int:
     test_linter_and_scorer_agree()
     test_fixture_runner_mysql_uri()
     test_fixture_namespaces_are_unique()
+    test_fixture_postgres_bootstrap()
+    test_irreversible_case_needs_a_removing_statement()
     print()
     if failures:
         print(f"{len(failures)} check(s) failed:")

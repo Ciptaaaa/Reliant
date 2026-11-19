@@ -73,8 +73,13 @@
       "type": "boolean"
     },
     "irreversible": {
-      "$comment": "True when the migration loses or overwrites data that cannot be restored without a backup. Separate from `destructive`, which only described the shape of the statement.",
+      "$comment": "True when the migration loses or overwrites data that cannot be restored without a backup. Separate from `destructive`, which only described the shape of the statement. The validator requires a statement in migration.sql that removes stored data (DROP TABLE, DROP COLUMN, TRUNCATE, DELETE FROM), unless `irreversible_reason` explains why the loss comes from a step the file does not contain.",
       "type": "boolean"
+    },
+    "irreversible_reason": {
+      "$comment": "Why the case is irreversible when migration.sql itself contains no removing statement, e.g. the later step of an expand-and-contract plan. Required to be meaningful (at least 20 characters) and forbidden when `irreversible` is false or absent.",
+      "type": "string",
+      "minLength": 20
     },
     "notes": {
       "type": "string"

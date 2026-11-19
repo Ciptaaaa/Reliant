@@ -15,19 +15,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reference documentation: risk classification, PostgreSQL specifics, MySQL specifics, safe migration
   patterns, rollback strategy. Engine claims verified against the PostgreSQL 18 manual, the MySQL 8.0
   manual, and the MySQL 8.0.12 / 8.0.28 / 8.0.29 release notes.
-- Test suite: 16 positive cases (8 PostgreSQL, 8 MySQL) and 4 negative cases, each with `context.md`,
+- Test suite: 20 cases — 16 positive (8 PostgreSQL, 8 MySQL) and 4 negative — each with `context.md`,
   `schema.sql`, `migration.sql`, `application-usage.md`, plus expected results in Markdown and
-  machine-checkable JSON.
-- Evaluation methodology and metrics (`docs/evaluation.md`). No runs recorded yet.
+  machine-checkable JSON. `scripts/check_fixtures.py` applies every fixture to a real `postgres:16` and
+  `mysql:8.0` and fails when a case does not behave the way its expectation claims.
+- Evaluation methodology and metrics (`docs/evaluation.md`). Three iterations are recorded:
+  `iteration-1` and `iteration-2` (three runs per case, below target) and `iteration-4` (one run per
+  case, self-evaluated, meets every metric). No independent iteration exists yet.
 - Documentation: `docs/design-principles.md`, `docs/compatibility.md`, `docs/security-model.md`.
 - Worked examples: a correct `APPROVED` report and a correct `BLOCKED` report.
-- CI workflow (`.github/workflows/validate-skills.yml`) with four jobs: structure validation, pinned
-  `skills-ref` (secondary, non-blocking), fixture verification against real `postgres:16` and
-  `mysql:8.0` services, and documentation claim hygiene.
+- CI workflow (`.github/workflows/validate-skills.yml`) with four jobs: structure validation,
+  `skills-ref` pinned to a commit SHA and enforced as a gate, fixture verification against real
+  `postgres:16` and `mysql:8.0` services, and documentation claim hygiene.
 - Local tooling: `scripts/validate_repo.py`, `scripts/evaluate_reports.py`,
   `scripts/check_fixtures.py`, `scripts/check_claims.py`.
 - Compatibility layers so supported agents can discover the skill:
-  `.claude/skills/migration-guard` and `.agents/skills/migration-guard`.
+  `.claude/skills/migration-guard` and `.agents/skills/migration-guard`. As committed they are
+  `symlink.txt` pointers, so Claude Code and Copilot find nothing until the documented link command runs;
+  Kilo Code finds the skill through `kilo.json`.
 - **`references/change-impact-taxonomy.md`** — the normative definitions every Reliant skill now shares:
   *effect on stored data* (additive / restrictive / narrowing / transformative / removing), *outcome*
   (applied / refused / partial), *reversibility*, *data loss*, and *operational risk* are five separate
@@ -52,14 +57,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `iteration-meta.json` recording that it is **one run per case** and self-evaluated, so the number is
   not presented as a stable or independent result.
 - Release verification: the compatibility layer is documented as inactive with a tested setup command,
-  and `check_fixtures.py` now isolates each case in its own schema/database, parses `mysql://` URIs into
-  client flags, and creates `citext` before applying PG-001.
-- Fixture job no longer depends on the `citext` extension. The previous run still failed at
-  `CREATE EXTENSION IF NOT EXISTS citext` (`type "citext" does not exist`), because the runner's
-  `postgresql-client` does not bring the server extension. PG-001 now falls back to a plain-text `citext`
-  domain only when no type of that name exists at all, so a server without contrib can still apply the
-  fixture while a server with the real extension keeps using it. The workflow still installs
-  `postgresql-contrib` best-effort, but that does not reach the `postgres:16` service container.
+  and `check_fixtures.py` now isolates each case in its own schema/database and parses `mysql://` URIs into
+  client flags.
+- Fixture job resolves `citext` through `search_path` instead of assuming the type is missing. The
+  extension is installed into `public` by `postgres:16`, but the harness set `search_path` to the
+  per-case schema only, so PG-001 failed with `type "citext" does not exist` while the type existed.
+  `SET search_path TO <case schema>, public` is now used for both the setup and the migration, so the
+  fixture's tables stay in their own schema and a type that lives in `public` resolves. The workflow
+  installs `postgresql-contrib` best-effort only; that package does not reach the service container and
+  the fix does not depend on it.
 - `README.md`: evaluation status now points at `docs/evaluation.md` instead of restating numbers, so the
   two cannot drift.
 

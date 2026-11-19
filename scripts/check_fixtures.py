@@ -121,38 +121,17 @@ def check_postgres(root: Path, conn: str, case_id: str) -> bool:
 
     # Each case gets its own schema. Without this, the second case to define `users` or `orders` failed
     # setup with `relation already exists`, which is a harness defect, not a fixture defect.
-    # `citext` is an extension, not a built-in type (PG-001 declares `email citext`), so it must exist
-    # before the schema is applied; the extension is installed once and left in place.
-    # The harness no longer requires that extension to be installable: PG-001 gets a plain-text stand-in
-    # when `citext` exists nowhere, so a server without `postgresql-contrib` can still apply the schema.
-    # The probe runs as its own top-level `SELECT ... set_config(...)` before the `DO` block, not as an
-    # `IF EXISTS (...)` inside it: PL/pgSQL parses the whole block body before running it, so a domain
-    # created earlier in the same block is still a shell in the catalog and the lookup aborts with
-    # `cache lookup failed for type`. The stand-in is created only when no type of that name exists at
-    # all, so an extension installed into another schema keeps being the one the schema resolves.
-    # The comparison semantics of the stand-in do not matter here: the case has no seed rows, and the
-    # migration under test only drops a different column.
-    fallback = (
-        "SELECT set_config('check_fixtures.citext', CASE WHEN EXISTS"
-        " (SELECT 1 FROM pg_type WHERE typname = 'citext') THEN 'present' ELSE 'missing' END, false);\n"
-        "DO $$BEGIN\n"
-        "  IF current_setting('check_fixtures.citext') = 'missing' THEN\n"
-        "    CREATE DOMAIN pg_temp.citext AS text;\n"
-        "  END IF;\n"
-        "END$$;\n"
-        if case_id == "PG-001"
-        else ""
-    )
-
-    # Why `, public` matters: `CREATE EXTENSION citext` runs while search_path is still the default,
-    # so the type lands in `public`. If search_path were only the case schema, `citext` could not be
-    # resolved even though it exists (probe says "present", CREATE TABLE says "does not exist").
-    # The case schema stays first so the fixture's tables are created there, not in `public`.
+    # `citext` is an extension, not a built-in type (PG-001 declares `email citext`). `CREATE EXTENSION`
+    # installs it into `public`, and the schema is applied with `search_path` set to the case schema, so
+    # `public` has to stay on the path or the type exists but cannot be resolved. That was the real
+    # failure: `type "citext" does not exist` while `CREATE EXTENSION` had succeeded. The case schema
+    # stays first so the fixture's tables are created there and no case writes into `public`.
+    # There is deliberately no `citext` stand-in: a text domain would make the case pass on a server
+    # where the extension is genuinely missing, so the check would stop proving that the fixture applies
+    # as documented. A server without `postgresql-contrib` must fail loudly instead.
     search_path = f"SET search_path TO {namespace}, public;\n"
-
     bootstrap = (
         f"CREATE EXTENSION IF NOT EXISTS citext;\n"
-        f"{fallback}"
         f"DROP SCHEMA IF EXISTS {namespace} CASCADE;\n"
         f"CREATE SCHEMA {namespace};\n"
         f"{search_path}"
