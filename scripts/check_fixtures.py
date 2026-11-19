@@ -123,19 +123,21 @@ def check_postgres(root: Path, conn: str, case_id: str) -> bool:
     # before the schema is applied; the extension is installed once and left in place.
     # The harness no longer requires that extension to be installable: PG-001 gets a plain-text stand-in
     # when `citext` exists nowhere, so a server without `postgresql-contrib` can still apply the schema.
-    # The stand-in is created only when no type of that name exists at all; `IF NOT EXISTS` alone is not
-    # enough, because it compares domains inside `pg_temp` and would produce a second `citext` next to an
-    # extension installed into another schema, which then fails with `type "citext" is only a shell`.
+    # The probe runs as its own top-level `SELECT ... set_config(...)` before the `DO` block, not as an
+    # `IF EXISTS (...)` inside it: PL/pgSQL parses the whole block body before running it, so a domain
+    # created earlier in the same block is still a shell in the catalog and the lookup aborts with
+    # `cache lookup failed for type`. The stand-in is created only when no type of that name exists at
+    # all, so an extension installed into another schema keeps being the one the schema resolves.
     # The comparison semantics of the stand-in do not matter here: the case has no seed rows, and the
     # migration under test only drops a different column.
     fallback = (
-        "DO $$\n"
-        "BEGIN\n"
-        "  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'citext') THEN\n"
+        "SELECT set_config('check_fixtures.citext', CASE WHEN EXISTS"
+        " (SELECT 1 FROM pg_type WHERE typname = 'citext') THEN 'present' ELSE 'missing' END, false);\n"
+        "DO $$BEGIN\n"
+        "  IF current_setting('check_fixtures.citext') = 'missing' THEN\n"
         "    CREATE DOMAIN pg_temp.citext AS text;\n"
         "  END IF;\n"
-        "END\n"
-        "$$;\n"
+        "END$$;\n"
         if case_id == "PG-001"
         else ""
     )

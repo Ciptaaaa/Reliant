@@ -56,10 +56,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   client flags, and creates `citext` before applying PG-001.
 - Fixture job no longer depends on the `citext` extension. The previous run still failed at
   `CREATE EXTENSION IF NOT EXISTS citext` (`type "citext" does not exist`), because the runner's
-  `postgresql-client` does not bring the server extension. The workflow now also installs
-  `postgresql-contrib`, and PG-001 falls back to a plain-text `citext` domain only when no type of that
-  name exists at all, so a server without contrib can still apply the fixture while a server with the
-  real extension keeps using it.
+  `postgresql-client` does not bring the server extension. PG-001 now falls back to a plain-text `citext`
+  domain only when no type of that name exists at all, so a server without contrib can still apply the
+  fixture while a server with the real extension keeps using it. The workflow still installs
+  `postgresql-contrib` best-effort, but that does not reach the `postgres:16` service container.
 - `README.md`: evaluation status now points at `docs/evaluation.md` instead of restating numbers, so the
   two cannot drift.
 
