@@ -121,8 +121,27 @@ def check_postgres(root: Path, conn: str, case_id: str) -> bool:
     # setup with `relation already exists`, which is a harness defect, not a fixture defect.
     # `citext` is an extension, not a built-in type (PG-001 declares `email citext`), so it must exist
     # before the schema is applied; the extension is installed once and left in place.
+    # The harness no longer requires that extension to be installable: PG-001 gets a plain-text stand-in
+    # when `citext` exists nowhere, so a server without `postgresql-contrib` can still apply the schema.
+    # The stand-in is created only when no type of that name exists at all; `IF NOT EXISTS` alone is not
+    # enough, because it compares domains inside `pg_temp` and would produce a second `citext` next to an
+    # extension installed into another schema, which then fails with `type "citext" is only a shell`.
+    # The comparison semantics of the stand-in do not matter here: the case has no seed rows, and the
+    # migration under test only drops a different column.
+    fallback = (
+        "DO $$\n"
+        "BEGIN\n"
+        "  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'citext') THEN\n"
+        "    CREATE DOMAIN pg_temp.citext AS text;\n"
+        "  END IF;\n"
+        "END\n"
+        "$$;\n"
+        if case_id == "PG-001"
+        else ""
+    )
     bootstrap = (
         f"CREATE EXTENSION IF NOT EXISTS citext;\n"
+        f"{fallback}"
         f"DROP SCHEMA IF EXISTS {namespace} CASCADE;\n"
         f"CREATE SCHEMA {namespace};\n"
         f"SET search_path TO {namespace};\n"

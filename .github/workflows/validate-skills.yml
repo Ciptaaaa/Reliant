@@ -130,7 +130,12 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install clients
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client mariadb-client
+        # `postgresql-contrib` carries `citext`, which PG-001 declares. Installing the server-side
+        # package matching the service container keeps the real type in play; `check_fixtures.py` still
+        # has a text stand-in so the job does not depend on it.
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client postgresql-contrib mariadb-client
       - name: Apply fixtures and check expected failures
         env:
           PGPASSWORD: fixture

@@ -53,8 +53,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   not presented as a stable or independent result.
 - Release verification: the compatibility layer is documented as inactive with a tested setup command,
   and `check_fixtures.py` now isolates each case in its own schema/database, parses `mysql://` URIs into
-  client flags, and creates `citext` before applying PG-001. Those were the three causes of the failing
-  GitHub Actions run.
+  client flags, and creates `citext` before applying PG-001.
+- Fixture job no longer depends on the `citext` extension. The previous run still failed at
+  `CREATE EXTENSION IF NOT EXISTS citext` (`type "citext" does not exist`), because the runner's
+  `postgresql-client` does not bring the server extension. The workflow now also installs
+  `postgresql-contrib`, and PG-001 falls back to a plain-text `citext` domain only when no type of that
+  name exists at all, so a server without contrib can still apply the fixture while a server with the
+  real extension keeps using it.
 - `README.md`: evaluation status now points at `docs/evaluation.md` instead of restating numbers, so the
   two cannot drift.
 
