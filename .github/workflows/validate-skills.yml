@@ -11,7 +11,10 @@ permissions:
 
 env:
   PYTHON_VERSION: "3.12"
-  SKILLS_REF_REF: "main"
+  # Pinned commit, not `main`: a newer upstream commit must be a deliberate bump here, not a change that
+  # turns this gate red on its own. Update with
+  # `git ls-remote https://github.com/agentskills/agentskills.git refs/heads/main`.
+  SKILLS_REF_SHA: "83021e2be457a9b6679148719c1f6074f0ad975e"
 
 jobs:
   structure:
@@ -71,9 +74,12 @@ jobs:
           done
 
   skills-ref:
-    name: Official validator (secondary)
+    name: Official validator (pinned SHA)
+    # This is a quality gate now, not a second opinion that may fail silently. Two things make that safe:
+    # the commit is pinned in SKILLS_REF_SHA, so a green run means "valid at this validator version",
+    # and the step below fails loudly when the pin cannot be fetched instead of quietly validating
+    # nothing. Bump the SHA deliberately when adopting a newer validator.
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -82,9 +88,17 @@ jobs:
 
       - name: Install pinned skills-ref
         run: |
-          git clone --quiet https://github.com/agentskills/agentskills.git skills-ref-src
-          cd skills-ref-src/skills-ref
-          git checkout --quiet "$SKILLS_REF_REF"
+          git init --quiet skills-ref-src
+          cd skills-ref-src
+          git remote add origin https://github.com/agentskills/agentskills.git
+          git fetch --quiet --depth 1 origin "$SKILLS_REF_SHA"
+          git checkout --quiet FETCH_HEAD
+          actual="$(git rev-parse HEAD)"
+          if [ "$actual" != "$SKILLS_REF_SHA" ]; then
+            echo "skills-ref pin mismatch: fetched $actual, pinned $SKILLS_REF_SHA" >&2
+            exit 1
+          fi
+          cd skills-ref
           pip install --quiet .
           echo "$GITHUB_WORKSPACE/skills-ref-src/skills-ref" >> "$GITHUB_PATH"
 
